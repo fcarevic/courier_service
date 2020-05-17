@@ -1,0 +1,7 @@
+TODO:
+- izmenjeni tip kolone u city tabeli, napravi novu bazu na serveru
+
+Pitanja:
+-kada se bruse kurir, da li se brise i iz tabele korisnik
+- changeVehicleInCourierRequest(java.lang.String userName, java.lang.String licencePlateNumber) 
+Promena broj vozacke dozvole --- vozacka dozvola , a stoji licence plate i change vehicle u nazivu??

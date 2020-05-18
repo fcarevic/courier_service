@@ -5,3 +5,5 @@ Pitanja:
 -kada se bruse kurir, da li se brise i iz tabele korisnik
 - changeVehicleInCourierRequest(java.lang.String userName, java.lang.String licencePlateNumber) 
 Promena broj vozacke dozvole --- vozacka dozvola , a stoji licence plate i change vehicle u nazivu??
+- zasto Big  decimal u get currently_at package
+- zasto nema id adrese u insert user

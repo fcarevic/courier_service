@@ -81,7 +81,7 @@ public class cf170065_CourierOperationsImplementation  implements CourierOperati
     @Override
     public List<String> getAllCouriers() {
          List<String> list= new LinkedList<>();
-                String sql = "select username form Courier orderby profit desc";
+                String sql = "select username from Courier orderby profit desc";
             Connection conn = DB.get_instance();
         try(      PreparedStatement query = conn.prepareStatement(sql);
                
@@ -95,7 +95,8 @@ public class cf170065_CourierOperationsImplementation  implements CourierOperati
             Logger.getLogger(cf170065_CourierOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
         }
             
-     return list;  }
+     return list;  
+    }
 
     @Override
     public BigDecimal getAverageCourierProfit(int numOfDeliveredPackages) {

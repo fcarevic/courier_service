@@ -138,6 +138,69 @@ public class cf170065_VehicleOperationsImplementation implements VehicleOperatio
         return false;
    
     }
+
+    @Override
+    public boolean parkVehicle(String licencePlate, int idStockroom) {
+        try {
+            String sql = "Insert into Parked(idStockroom, registrationNum) value(?,?) ";
+            Connection conn= DB.get_instance();
+            PreparedStatement query = conn.prepareStatement(sql);
+            query.setInt(1, idStockroom);
+            query.setString(2, licencePlate);
+            return query.executeUpdate()==1;
+        } catch (SQLException ex) {
+            Logger.getLogger(cf170065_VehicleOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
+     
+    
+    }
+    public boolean unparkVehicle(String licencePlate){
+        try {
+            String sql = "Delete from Parked where registrationNum = ?";
+            Connection conn= DB.get_instance();
+            PreparedStatement query = conn.prepareStatement(sql);
+            query.setString(1, licencePlate);
+            return query.executeUpdate()==1;
+        } catch (SQLException ex) {
+            Logger.getLogger(cf170065_VehicleOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
+    }
+    
+    public List<String> getAllVehiclesParkedInCity(int idCity){
+        LinkedList<String> list= new LinkedList<>();
+        try {
+            
+            String sql = "Select registationNum from Parked, Stockroom, Adress where Adress.idCity = ? and Adress.idAdress= Stockroom.idAdress and Parked.idStockroom = Stockroom.idStockroom ";
+            Connection conn = DB.get_instance();
+            PreparedStatement query= conn.prepareStatement(sql);
+            query.setInt(1, idCity);
+            ResultSet rs= query.executeQuery();
+            while(rs.next()){
+             list.add(rs.getString(1));
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(cf170065_VehicleOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+       return list;
+     
+    }
+
+    BigDecimal getCapacity(String myVehicle) {
+        try {
+            String sql = "Select capacity from Vehicle where registrationNum = ?";
+            Connection conn= DB.get_instance();
+            PreparedStatement query = conn.prepareStatement(sql);
+            query.setString(1, myVehicle);
+            ResultSet rs= query.executeQuery();
+            if(rs.next())
+                return rs.getBigDecimal(1);
+        } catch (SQLException ex) {
+            Logger.getLogger(cf170065_VehicleOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+     }
     
     
 }

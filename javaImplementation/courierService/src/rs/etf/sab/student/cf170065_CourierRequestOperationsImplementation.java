@@ -59,7 +59,7 @@ public class cf170065_CourierRequestOperationsImplementation implements CourierR
     }
 
     @Override
-    public boolean changeVehicleInCourierRequest(String userName, String drivingLicence) {
+    public boolean changeDriverLicenceNumberInCourierRequest(String userName, String drivingLicence) {
         //OVO JE GRESKA?
      String sql = "update  CourierRequests set driversLicence = ? where userName = ?";
         Connection conn = DB.get_instance();

@@ -20,9 +20,10 @@ import rs.etf.sab.operations.AddressOperations;
  * @author CAR
  */
 public class cf170065_AdressOperationsImplementation implements AddressOperations {
+  
 
     @Override
-    public int insertDistrict(String street, int number, int city_id, int xcord, int ycord) {
+    public int insertAddress(String street, int number, int city_id, int xcord, int ycord) {
           String sql = "insert into Adress(xCord, yCord, street, number,idCity)"
                     + "          value (?,?,?,?,?)";
             Connection conn = DB.get_instance();
@@ -54,7 +55,7 @@ public class cf170065_AdressOperationsImplementation implements AddressOperation
     }
 
     @Override
-    public int deleteDistricts(String street, int number) {
+    public int deleteAddresses(String street, int number) {
         String sql = "delete from Adress where street = ? and number = ?";
         Connection conn = DB.get_instance();
         try (PreparedStatement query = conn.prepareStatement(sql)){
@@ -68,7 +69,7 @@ public class cf170065_AdressOperationsImplementation implements AddressOperation
      }
 
     @Override
-    public boolean deleteDistrict(int id_address) {
+    public boolean deleteAdress(int id_address) {
         String sql = "delete from Adress where idAdress = ?";
         Connection conn = DB.get_instance();
         try (PreparedStatement query = conn.prepareStatement(sql)){
@@ -103,7 +104,7 @@ public class cf170065_AdressOperationsImplementation implements AddressOperation
      }
 
     @Override
-    public List<Integer> getAllDistrictsFromCity(int city_id) {
+    public List<Integer> getAllAddressesFromCity(int city_id) {
         List<Integer> list= new LinkedList<>();
         String sql = "select idAdress form Adress where idCity = ?";
         Connection conn = DB.get_instance();
@@ -124,7 +125,7 @@ public class cf170065_AdressOperationsImplementation implements AddressOperation
      }
 
     @Override
-    public List<Integer> getAllDistricts() {
+    public List<Integer> getAllAddresses() {
         List<Integer> list= new LinkedList<>();
         String sql = "select idAdress form Adress ";
         Connection conn = DB.get_instance();

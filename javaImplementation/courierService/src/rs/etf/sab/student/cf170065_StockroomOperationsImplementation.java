@@ -23,7 +23,7 @@ import rs.etf.sab.operations.StockroomOperations;
 public class cf170065_StockroomOperationsImplementation implements StockroomOperations {
 
     @Override
-    public int insertDistrict(int adress) {
+    public int insertStockroom(int adress) {
         String sql = "insert into Stockroon (idAdress) value (?)";
         Connection conn = DB.get_instance();
        try( PreparedStatement query = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);)
@@ -44,7 +44,7 @@ public class cf170065_StockroomOperationsImplementation implements StockroomOper
     }
 
     @Override
-    public boolean deleteDistrict(int stockroom_id) {
+    public boolean deleteStockroom(int stockroom_id) {
            String sql = "delete from Stockroon where idStockroom = ?";
         Connection conn = DB.get_instance();
        try( PreparedStatement query = conn.prepareStatement(sql);)

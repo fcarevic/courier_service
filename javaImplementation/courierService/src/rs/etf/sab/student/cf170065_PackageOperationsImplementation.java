@@ -271,7 +271,7 @@ public class cf170065_PackageOperationsImplementation implements PackageOperatio
     }
 
     @Override
-    public Integer getDeliveryStatus(int package_id) {
+    public int getDeliveryStatus(int package_id) {
     String sql = "select status from Package where idPackage = ?";
                     
             Connection conn = DB.get_instance();
@@ -288,17 +288,42 @@ public class cf170065_PackageOperationsImplementation implements PackageOperatio
         } catch (SQLException ex) {
             Logger.getLogger(cf170065_CityOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return null;  
+        return -1;  
     }
 
     @Override
-    public BigDecimal getPriceOfDelivery(int arg0) {
+    public BigDecimal getPriceOfDelivery(int idPackage) {
+        try {
+            String sql = "Select price from Package where idPackage = ?";
+            Connection conn = DB.get_instance();
+            PreparedStatement query = conn.prepareStatement(sql);
+            query.setInt(1, idPackage);
+            ResultSet executeQuery = query.executeQuery();
+            if(executeQuery.next())
+                return executeQuery.getBigDecimal(1);
+        } catch (SQLException ex) {
+            Logger.getLogger(cf170065_PackageOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+                
     }
 
     @Override
-    public BigDecimal getCurrentLocationOfPackage(int package_id) {
-       //ZASTO BIG DECIMAL ?
-        
+    public int getCurrentLocationOfPackage(int package_id) {
+        try {
+            //ZASTO BIG DECIMAL ?
+            String sql = "Select idCity from Adress, Package where Adress.idAdress = Package.currently_atAdress and Package.idPackage=? and Package.idPackage not in (Select idPackage from PackageInVehicle) ";
+            Connection conn = DB.get_instance();
+            PreparedStatement query = conn.prepareStatement(sql);
+            query.setInt(1, package_id);
+            ResultSet rs= query.executeQuery();
+            if(rs.next())
+                 return rs.getInt(1);
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(cf170065_PackageOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return -1;
      }
 
     @Override
@@ -320,6 +345,57 @@ public class cf170065_PackageOperationsImplementation implements PackageOperatio
             Logger.getLogger(cf170065_CityOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;    
+    }
+
+    public BigDecimal getWeight(int idPackage) {
+        try {
+            String sql = "Select weight from PackageRequest where idPackage = ?";
+            Connection conn = DB.get_instance();
+            
+            PreparedStatement query= conn.prepareStatement(sql);
+            query.setInt(1, idPackage);
+            ResultSet rs= query.executeQuery();
+            if(rs.next())
+                return rs.getBigDecimal(1);
+        } catch (SQLException ex) {
+            Logger.getLogger(cf170065_PackageOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    
+    }
+
+    public  boolean insertPackageInVehicle(int packageId, String myVehicle) {
+        try {
+            String sql = "Insert into PackageInVehicle(idPackage, registrationNum) value(?,?)";
+            Connection conn= DB.get_instance();
+            PreparedStatement query= conn.prepareStatement(sql);
+            query.setString(2, myVehicle);
+            query.setInt(1,packageId);
+            return query.executeUpdate()==1;
+        } catch (SQLException ex) {
+            Logger.getLogger(cf170065_PackageOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
+        
+        
+                
+    }
+
+    public boolean changeStatus(int packageId, int status) {
+         try {
+            String sql = "Update Package set status= ? where idPackage = ?";
+            Connection conn= DB.get_instance();
+            PreparedStatement query= conn.prepareStatement(sql);
+            query.setInt(2, packageId);
+            query.setInt(1,status);
+            return query.executeUpdate()==1;
+        } catch (SQLException ex) {
+            Logger.getLogger(cf170065_PackageOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
+        
+        
+        
     }
     
 }

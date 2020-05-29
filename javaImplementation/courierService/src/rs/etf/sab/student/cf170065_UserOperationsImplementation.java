@@ -22,47 +22,59 @@ import rs.etf.sab.operations.UserOperations;
 public class cf170065_UserOperationsImplementation implements UserOperations{
 
     @Override
-    public boolean insertUser(String userName, String firstName, String lastName, String password) {
-        if(!Character.isUpperCase(firstName.charAt(0))) return false;
-        if(!Character.isUpperCase(lastName.charAt(0))) return false;
-        if(password.length()!=8) return false;
-        boolean upper=false, lower = false, number = false, character= false;
-           for(int i = 0 ; i < password.length(); i++){
+    public boolean insertUser(String userName, String firstName, String lastName, String password, int idAddress) {
+        try {
+            if(!Character.isUpperCase(firstName.charAt(0))) return false;
+            if(!Character.isUpperCase(lastName.charAt(0))) return false;
+            if(password.length()!=8) return false;
+            boolean upper=false, lower = false, number = false, character= false;
+            for(int i = 0 ; i < password.length(); i++){
                 char c= password.charAt(i);
-                 if (Character.isAlphabetic(c)){
-                if(Character.isDigit(c)) number=true;
-                else if (Character.isLowerCase(c)) lower= true;
-                else if (Character.isUpperCase(c)) upper= true;
-                else  character=true;
-                 } else System.err.println("NIJE LETTER");
-                 
-           }
-        
-        String sql = "insert into User(userName, firstName,lastname, password)"
+                if (Character.isAlphabetic(c)){
+                    if(Character.isDigit(c)) number=true;
+                    else if (Character.isLowerCase(c)) lower= true;
+                    else if (Character.isUpperCase(c)) upper= true;
+                    else  character=true;
+                } else System.err.println("NIJE LETTER");
                 
+            }String sql = "insert into User(userName, firstName,lastName, password, idAdress) value(?,?,?,?,?)";
+            Connection conn = DB.get_instance();
+            PreparedStatement query = conn.prepareStatement(sql);
+            query.setString(1,userName);
+            query.setString(2,firstName);
+            query.setString(3,lastName);
+            query.setString(4,password);
+            query.setInt(5,idAddress);
+            
+            return query.executeUpdate()==1;
+        } catch (SQLException ex) {
+            Logger.getLogger(cf170065_UserOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+              
+                return false;
         
         
     }
 
     @Override
-    public int declareAdmin(String username) {
+    public boolean declareAdmin(String username) {
         String sql = "insert into Administrator(userName) value(?)";
         Connection conn = DB.get_instance();
         try (PreparedStatement query = conn.prepareStatement(sql);){
             
             query.setString(1, username);
             
-            if( query.executeUpdate()==1) return 0;
+            return( query.executeUpdate()==1) ;
             
         } catch (SQLException ex) {
             Logger.getLogger(cf170065_UserOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return 1;
+        return false;
         
     }
 
     @Override
-    public Integer getSentPackages(String... usernames) {
+    public int getSentPackages(String... usernames) {
         int count = 0;
         boolean postojiKorisnik=false;
         String sql = "select count(*) from PackageRequest where userName = ?";
@@ -142,5 +154,19 @@ public class cf170065_UserOperationsImplementation implements UserOperations{
      return list; 
     }
     
+    public int getUsersCity(String username){
+        try {
+            String sql = "Select Adress.idCity from Adress,User where User.userName = ? and User.idAdress = Adress.idAdress ";
+            Connection conn = DB.get_instance();
+            PreparedStatement query = conn.prepareStatement(sql);
+            query.setString(1, username);
+            ResultSet rs=  query.executeQuery();
+            if(rs.next())
+                return rs.getInt(1);
+        } catch (SQLException ex) {
+            Logger.getLogger(cf170065_UserOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return -1;
+    }
     
 }

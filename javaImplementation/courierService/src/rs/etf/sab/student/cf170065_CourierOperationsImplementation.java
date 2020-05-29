@@ -122,4 +122,47 @@ public class cf170065_CourierOperationsImplementation  implements CourierOperati
      return avg;
     }
     
+    public boolean changeCouriersStatus(String username, int status){
+        try {
+            String sql  = "Update Courier set status=? where userName= ?";
+            Connection conn = DB.get_instance();
+            PreparedStatement query = conn.prepareStatement(sql);
+            query.setInt(1, status);
+            query.setString(2, username);
+            return query.executeUpdate()==1;
+        } catch (SQLException ex) {
+            Logger.getLogger(cf170065_CourierOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
+        
+        
+    }
+
+    public  boolean assignVehicle(String username, String myVehicle) {
+          boolean flag =false;
+        try {
+            String sql = "Insert into EverDriven(userName, registrationNum) value (?,?)";
+            String sql2 = "Update Courier set currentlyDriving = ? where userName=? and status = 0";
+            
+            Connection conn= DB.get_instance();
+            PreparedStatement query = conn.prepareStatement(sql2);
+            query.setString(1, myVehicle);
+            query.setString(2, username);
+           flag= query.executeUpdate()==1;
+            if(flag){
+                            PreparedStatement query2 = conn.prepareStatement(sql);
+                            query2.setString(1, username);
+                            query2.setString(2,myVehicle);
+                            query2.executeUpdate();
+                
+                
+                
+            
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(cf170065_CourierOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return flag;
+    }
+     
 }

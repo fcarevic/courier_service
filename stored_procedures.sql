@@ -34,3 +34,24 @@ begin
 		
 		return @status 
 end
+
+go 
+
+create procedure sp_eraseAll
+as 
+begin
+ delete from Package where 1=1;
+ delete from PackageInVehicle where 1=1;
+ delete from PackageRequest where 1=1;
+ delete from EverDriven where 1=1;
+ delete from Parked where 1=1;
+ delete from Administrator where 1=1;
+ delete from Courier where 1=1;
+ delete from CourierRequests where 1=1;
+ delete from Vehicle where 1=1;
+ delete from Stockroom where 1=1;
+ delete from projekat2020.User where 1=1;
+ delete from Adress where 1=1;
+ delete from City where 1=1;
+
+end

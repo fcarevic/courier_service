@@ -121,7 +121,7 @@ public class cf170065_AdressOperationsImplementation implements AddressOperation
                    Logger.getLogger(cf170065_CityOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
      
         }
-        return null;
+        return list;
      }
 
     @Override
@@ -143,7 +143,7 @@ public class cf170065_AdressOperationsImplementation implements AddressOperation
                    Logger.getLogger(cf170065_CityOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
      
         }
-        return null;
+        return list;
         
     }
     

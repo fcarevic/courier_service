@@ -16,6 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.management.Query;
 import rs.etf.sab.operations.PackageOperations;
 
 /**
@@ -468,4 +469,36 @@ public class cf170065_PackageOperationsImplementation implements PackageOperatio
     
     }
     
+    public boolean setCurrentLocation(int idPackage, int idAdress){
+    
+    String sql = "Update Package set currently_atAdress = ? where idPackage = ?";
+    Connection conn = DB.get_instance();
+        try (      PreparedStatement query = conn.prepareStatement(sql);
+      ) {
+            query.setInt(1, idAdress);
+                query.setInt(2, idPackage);
+                
+               return  query.executeUpdate()==1;
+        } catch (SQLException ex) {
+            Logger.getLogger(cf170065_PackageOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    
+    return false;
+    }
+    
+    
+    public boolean removePackageFromVehicle(int idPackage, String vehicleLicence){
+    String sql =  "Delete from PackageInVehicle where idPackage=? and registrationNum = ? ";
+    Connection conn = DB.get_instance();
+        try(         PreparedStatement query = conn.prepareStatement(sql);
+   ) {
+            query.setInt(1, idPackage);
+            query.setString(2, vehicleLicence);
+            return query.executeUpdate()==1;
+        } catch (SQLException ex) {
+            Logger.getLogger(cf170065_PackageOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    
+        return false;
+    }
 }

@@ -202,5 +202,34 @@ public class cf170065_VehicleOperationsImplementation implements VehicleOperatio
         return null;
      }
     
+    public int getFuelType(String licencePlate){
+    String sql = "select fuelType from Vehicle where registrationNum=?";
+    Connection conn=  DB.get_instance();
+        try (     PreparedStatement query = conn.prepareStatement(sql);
+     ){
+                query.setString(1, licencePlate);
+                ResultSet rs=  query.executeQuery();
+                if(rs.next())
+                        return rs.getInt(1);
+          } catch (SQLException ex) {
+            Logger.getLogger(cf170065_VehicleOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+       return -1;
     
+    }
+     public BigDecimal getConsumption(String licencePlate){
+    String sql = "select consumption from Vehicle where registrationNum=?";
+    Connection conn=  DB.get_instance();
+        try (     PreparedStatement query = conn.prepareStatement(sql);
+     ){
+                query.setString(1, licencePlate);
+                ResultSet rs=  query.executeQuery();
+                if(rs.next())
+                        return rs.getBigDecimal(1);
+          } catch (SQLException ex) {
+            Logger.getLogger(cf170065_VehicleOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+       return null;
+    
+    }
 }

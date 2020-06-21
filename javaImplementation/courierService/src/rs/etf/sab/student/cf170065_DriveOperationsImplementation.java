@@ -26,6 +26,9 @@ import rs.etf.sab.operations.VehicleOperations;
 public class cf170065_DriveOperationsImplementation implements DriveOperation{
     private static final int TO_DELIVER=1;
     private static final int TO_COLLECT=0;
+    private static final int CREATED=0, ACCEPTED=1,COLLECTED=2,DELIVERED=3,REJECTED=4 ,RETURN_TO_BEGINING=5;
+    private static final int[] fuelPrice={15,36,32};
+    private static final int GAS=0, DIESEL=2, PETROL=1; 
 
     @Override
     public boolean planingDrive(String username) {
@@ -45,21 +48,26 @@ public class cf170065_DriveOperationsImplementation implements DriveOperation{
                   currentCap =planRouteofCollectingPackages(idCity, pickedPackages, capacity, currentCap);
                   if(currentCap.compareTo(new BigDecimal(0))==0) return false;
                   int stockroomAdress = pr.getStockroomOperations().getStocroomAdressesFromCity(idCity).remove(0);
+                 List<PackagePlanInfo> deliveringList = new LinkedList<>();
                  
                        for(PackagePlanInfo pi: pickedPackages){
+                 PackagePlanInfo newpi= new PackagePlanInfo(pi.getIdPackage(), pi.getIdAdressFrom(), 
+                                                new Pair<Integer,Integer>(pi.getxCordFrom(), pi.getyCordFrom()));
                  int toAdress = pr.getPackageOperations().getAdressTo(pi.getIdPackage());
-                 Pair<Integer, Integer> cords = pr.getAddressOperations().getCoordinatesOfAdress(toAdress);
-                 pi.setInfoTo(toAdress, cords);
-                 pi.setToDeliver(true);
+                 Pair<Integer, Integer> cordsTo = pr.getAddressOperations().getCoordinatesOfAdress(toAdress);
+                 newpi.setInfoTo(toAdress, cordsTo);
+                 newpi.setToDeliver(true);
+                 newpi.setStatus(TO_DELIVER);
+                 deliveringList.add(newpi);
                  }
           
-                  sortRoute(stockroomAdress, pickedPackages);
+                  sortRoute(stockroomAdress, deliveringList);
                  
                  LinkedList<PackagePlanInfo> collecting = new LinkedList<>();
                     LinkedList<PackagePlanInfo> route = new LinkedList<PackagePlanInfo>(pickedPackages);
               
-                 for(int i = pickedPackages.size()-1; i>=0;i-- ){
-                     PackagePlanInfo pi = pickedPackages.get(i);
+                 for(int i = deliveringList.size()-1; i>=0;i-- ){
+                     PackagePlanInfo pi = deliveringList.get(i);
                      
                  int idNewCity = pr.getAddressOperations().getCityId(pi.getIdAdressTo());
                  collecting.clear();
@@ -70,19 +78,22 @@ public class cf170065_DriveOperationsImplementation implements DriveOperation{
                 
                  }
                 
-                 
-                  pr.getCouriersPackages().put(username, route);
+                 PackagePlanInfo end = new PackagePlanInfo(-1, stockroomAdress, pr.getAddressOperations().getCoordinatesOfAdress(stockroomAdress));
+                 end.setStatus(RETURN_TO_BEGINING);
+                route.addAll(0, pickedPackages);
+                route.add(end);
+                 RouteInfo ri = new RouteInfo();
+                 ri.setRoute(route);
+                 ri.setCurrentIdAdress(stockroomAdress);
+                Pair<Integer, Integer> stockCoords = pr.getAddressOperations().getCoordinatesOfAdress(stockroomAdress);
+                 ri.setCoords(stockCoords);
+                 ri.setTotalPriceOfDelivery(new BigDecimal(0));
+                  pr.getCouriersPackages().put(username, ri);
                   
                
              
                  pr.getVehicleOperations().unparkVehicle(myVehicle);
            
-               for(int packageId: pickedPackages){
-                           if(! pr.getPackageOperations().insertPackageInVehicle(packageId, myVehicle))
-                               System.out.println("rs.etf.sab.student.cf170065_DriveOperationsImplementation.planingDrive() NIJE UBACEN PAKET U VOZILO");
-                           if(! pr.getPackageOperations().changeStatus(packageId, 2))
-                               System.out.println("rs.etf.sab.student.cf170065_DriveOperationsImplementation.planingDrive() NIJE PROMENJEN STATUS PAKETA");
-                }
               
               if(!pr.getCourierOperations().changeCouriersStatus(username, 1))System.out.println("rs.etf.sab.student.cf170065_DriveOperationsImplementation.planingDrive() NIJE PROMENJEN STATUS KURIRA");;
                if(!pr.getCourierOperations().assignVehicle(username, myVehicle)) System.out.println("rs.etf.sab.student.cf170065_DriveOperationsImplementation.planingDrive() NIJE DODELJENO VOZILO");;
@@ -120,9 +131,10 @@ public class cf170065_DriveOperationsImplementation implements DriveOperation{
     }
     private boolean checkIfPackageBelongsToAnyRoute(int idPackage){
         PackageRoutes pr = PackageRoutes.getInstance();
-        Map<String,LinkedList<PackagePlanInfo>> map = pr.getCouriersPackages();
-        for(LinkedList<PackagePlanInfo> route : map.values()){
-                for(PackagePlanInfo pi: route){
+        Map<String,RouteInfo> map = pr.getCouriersPackages();
+        for(RouteInfo routeInfo : map.values()){
+            
+                for(PackagePlanInfo pi: routeInfo.getRoute()){
                     if(pi.getIdPackage()==idPackage)return true;
                 
                 
@@ -174,7 +186,69 @@ public class cf170065_DriveOperationsImplementation implements DriveOperation{
     
     @Override
     public int nextStop(String username) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
+        RouteInfo ri = PackageRoutes.getInstance().getCouriersPackages().get(username);
+        if(ri==null) return -1;
+        if(ri.getRoute().isEmpty())return -1;
+        PackagePlanInfo  pi = ri.getRoute().remove(0);
+        if(pi.getStatus()==TO_COLLECT){
+            PackageRoutes.getInstance().getPackageOperations().changeStatus(pi.getIdPackage(), COLLECTED);
+            PackageRoutes.getInstance().getPackageOperations().insertPackageInVehicle(pi.getIdPackage(), PackageRoutes.getInstance().getCourierOperations().getCurrentlyDrivingVehicle(username));
+            ri.setCurrentIdAdress(pi.getIdAdressFrom());
+            ri.setDistancepassed(ri.getDistancepassed()+Math.hypot(pi.getxCordFrom() - ri.getXcordl(), pi.getyCordFrom()- ri.getYcord()));
+            ri.setXcordl(pi.getxCordFrom());
+            ri.setYcord(pi.getyCordFrom());
+            
+            return -2;
+        }
+        else if(pi.getStatus()==TO_DELIVER){
+                
+          PackageRoutes.getInstance().getPackageOperations().changeStatus(pi.getIdPackage(), DELIVERED);
+          PackageRoutes.getInstance().getPackageOperations().removePackageFromVehicle(pi.getIdPackage(), PackageRoutes.getInstance().getCourierOperations().getCurrentlyDrivingVehicle(username));
+          PackageRoutes.getInstance().getCourierOperations().incrementNumberOfDeliveredPackages(username, 1);
+           ri.setDistancepassed(ri.getDistancepassed()+Math.hypot(pi.getxCordTo() - ri.getXcordl(), pi.getyCordTo()- ri.getYcord()));
+            ri.setXcordl(pi.getxCordTo());
+            ri.setYcord(pi.getyCordTo());
+           ri.setTotalPriceOfDelivery(ri.getTotalPriceOfDelivery().add(PackageRoutes.getInstance().getPackageOperations().getPriceOfDelivery(pi.getIdPackage())));
+           
+        
+            return pi.getIdPackage();
+        }else if(pi.getStatus()==RETURN_TO_BEGINING){
+           
+              ri.setDistancepassed(ri.getDistancepassed()+Math.hypot(pi.getxCordFrom() - ri.getXcordl(), pi.getyCordFrom()- ri.getYcord()));
+            ri.setXcordl(pi.getxCordFrom());
+            ri.setYcord(pi.getyCordFrom());
+            String licencePlate= PackageRoutes.getInstance().getCourierOperations().getCurrentlyDrivingVehicle(username);
+            List<Integer> packagesInVehicle = getPackagesInVehicle(licencePlate);
+            
+            for(int idPackage : packagesInVehicle){
+                PackageRoutes.getInstance().getPackageOperations().setCurrentLocation(idPackage, pi.getIdAdressFrom());
+                
+            
+            }
+            int fuelType= PackageRoutes.getInstance().getVehicleOperations().getFuelType(licencePlate);
+            BigDecimal consumption = PackageRoutes.getInstance().getVehicleOperations().getConsumption(licencePlate);
+            BigDecimal deficit = consumption.multiply(new BigDecimal(ri.getDistancepassed())).multiply(new  BigDecimal(fuelPrice[fuelType]));
+            BigDecimal profit = ri.getTotalPriceOfDelivery().subtract(deficit);
+            
+            PackageRoutes.getInstance().getCourierOperations().incrementProfitForCourier(username, profit);
+            PackageRoutes.getInstance().getCourierOperations().changeCouriersStatus(username, 0);
+            int idStockroom = PackageRoutes.getInstance().getStockroomOperations().getStockroomOnAdress(pi.getIdAdressFrom());
+            PackageRoutes.getInstance().getVehicleOperations().parkVehicle(licencePlate, idStockroom);
+            //  todo:: postavi null na curently diriving
+            
+                    
+            
+            
+            
+         }
+        
+         
+        
+        
+        
+        return -1;
+        
     }
 
     @Override

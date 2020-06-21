@@ -106,4 +106,21 @@ public class cf170065_StockroomOperationsImplementation implements StockroomOper
         return list; }
     
     
+    public int getStockroomOnAdress(int idAdress){
+        String sql= "Select idStockroom from Stockroom where idAdress = ?";
+        Connection conn = DB.get_instance();
+        try (    PreparedStatement query = conn.prepareStatement(sql);
+      ){
+            query.setInt(1, idAdress);
+            ResultSet rs = query.executeQuery();
+            if(rs.next()) return rs.getInt(1);
+          } catch (SQLException ex) {
+            Logger.getLogger(cf170065_StockroomOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return -1;
+    
+    }
+    
+    
 }

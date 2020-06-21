@@ -33,7 +33,7 @@ public class PackagePlanInfo {
         this.idAdressTo=adressTo;
         this.xCordTo=cordsTo.getKey();
         this.yCordTo=cordsTo.getValue();
-        this.toDeliever=true;
+        this.toDeliver=true;
     
     
     }
@@ -74,8 +74,8 @@ public class PackagePlanInfo {
         return idAdressTo;
     }
 
-    public boolean isToDeliever() {
-        return toDeliever;
+    public boolean isToDeliver() {
+        return toDeliver;
     }
 
     public int getStatus() {

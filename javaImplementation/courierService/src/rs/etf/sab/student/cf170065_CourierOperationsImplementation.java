@@ -138,6 +138,20 @@ public class cf170065_CourierOperationsImplementation  implements CourierOperati
         
     }
 
+    public boolean incrementNumberOfDeliveredPackages(String username, int increment){
+        String sql = "Update Courier set numberOfDeliveredPackages= numberOfDeliveredPackages+ ?  where username=?";
+     Connection conn = DB.get_instance();
+        try (     PreparedStatement query = conn.prepareStatement(sql);
+      ) {
+                query.setInt(1, increment);
+                query.setString(2, username);
+                return query.executeUpdate()==1;
+         } catch (SQLException ex) {
+            Logger.getLogger(cf170065_CourierOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+     
+    return false;
+    }
     public  boolean assignVehicle(String username, String myVehicle) {
           boolean flag =false;
         try {
@@ -165,4 +179,37 @@ public class cf170065_CourierOperationsImplementation  implements CourierOperati
         return flag;
     }
      
+    public    String getCurrentlyDrivingVehicle(String username) {
+     String sql2 = " select currentlyDriving from Courier where userName=? and status = 1";
+     Connection conn= DB.get_instance();
+        try {
+            PreparedStatement query = conn.prepareStatement(sql2);
+            query.setString(1, username);
+            ResultSet rs=  query.executeQuery();
+            if(rs.next()){
+                return rs.getString(1);
+                }
+        } catch (SQLException ex) {
+            Logger.getLogger(cf170065_CourierOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+     return null;
+            }
+       public boolean incrementProfitForCourier(String username, BigDecimal newProfit){
+       String sql  = "update Courier set profit = profit+ ? where username =?";
+       Connection conn  = DB.get_instance();
+        try (     PreparedStatement query = conn.prepareStatement(sql);
+     ){
+            query.setString(2, username);
+            query.setBigDecimal(1, newProfit);
+            return query.executeUpdate()==1;
+          } catch (SQLException ex) {
+            Logger.getLogger(cf170065_CourierOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+       
+             return false;
+       
+       
+       
+       }
+       
 }

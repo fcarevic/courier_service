@@ -24,7 +24,7 @@ import rs.etf.sab.operations.VehicleOperations;
  */
 public class PackageRoutes {
     private static PackageRoutes instance;
-      private Map<String, LinkedList<PackagePlanInfo>> couriersPackages = new HashMap<>();
+      private Map<String, RouteInfo> couriersPackages = new HashMap<>();
     private cf170065_PackageOperationsImplementation packageOperations = new cf170065_PackageOperationsImplementation();
     private cf170065_CourierOperationsImplementation courierOperations = new cf170065_CourierOperationsImplementation();
     private cf170065_CourierRequestOperationsImplementation courierRequestOperation = new cf170065_CourierRequestOperationsImplementation();
@@ -44,7 +44,7 @@ public class PackageRoutes {
 
    
 
-    public Map<String, LinkedList<PackagePlanInfo>> getCouriersPackages() {
+    public Map<String, RouteInfo> getCouriersPackages() {
         return couriersPackages;
     }
 

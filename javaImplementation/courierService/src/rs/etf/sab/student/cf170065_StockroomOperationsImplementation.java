@@ -43,8 +43,28 @@ public class cf170065_StockroomOperationsImplementation implements StockroomOper
               return -1;
     }
 
+    public List<Integer> getStocroomAdressesFromCity(int idCity){
+                    String sql = "Select idAdress from Stockroom where idAdress in (Select idAdress from Adress where idCity=?)";
+                    Connection conn = DB.get_instance();
+                    LinkedList<Integer> list = new LinkedList<>();
+        try (    PreparedStatement query= conn.prepareStatement(sql);
+       ) {
+            query.setInt(1, idCity);
+            ResultSet rs =query.executeQuery();
+            while(rs.next()){
+                list.add(rs.getInt(1));
+            }
+            
+         } catch (SQLException ex) {
+            Logger.getLogger(cf170065_StockroomOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return list;
+                    
+    }
     @Override
     public boolean deleteStockroom(int stockroom_id) {
+             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+   
            String sql = "delete from Stockroon where idStockroom = ?";
         Connection conn = DB.get_instance();
        try( PreparedStatement query = conn.prepareStatement(sql);)

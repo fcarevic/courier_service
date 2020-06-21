@@ -13,6 +13,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.util.Pair;
 import rs.etf.sab.operations.AddressOperations;
 
 /**
@@ -145,6 +146,42 @@ public class cf170065_AdressOperationsImplementation implements AddressOperation
         }
         return list;
         
+    }
+    public int getCityId(int idAdress){
+        Connection conn= DB.get_instance();
+        String sql = "Select idCity from Adress where idAdress = ?";
+        try( PreparedStatement query = conn.prepareStatement(sql);) {
+           query.setInt(1, idAdress);
+           ResultSet rs= query.executeQuery();
+           if(rs.next()){
+           return rs.getInt(1);
+           }
+        } catch (SQLException ex) {
+            Logger.getLogger(cf170065_AdressOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+           return -1;     
+    
+    }
+    public Pair<Integer, Integer> getCoordinatesOfAdress(int idAdress){
+        String sql = "Select xCord, yCord from Adress where idAdress = ?";
+        Connection conn = DB.get_instance();
+        try(     PreparedStatement query = conn.prepareStatement(sql);
+       ) {
+            query.setInt(1, idAdress);
+            ResultSet rs = query.executeQuery();
+            if(rs.next()){
+                return new Pair(new Integer(rs.getInt(1)), new Integer(rs.getInt(2)));
+            }
+            
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(cf170065_AdressOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+               
+    
+    
     }
     
 }

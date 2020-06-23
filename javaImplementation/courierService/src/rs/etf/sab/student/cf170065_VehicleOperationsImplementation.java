@@ -84,7 +84,8 @@ public class cf170065_VehicleOperationsImplementation implements VehicleOperatio
 
     @Override
     public boolean changeFuelType(String regNum, int fuelType) {
-    String sql = "update  Vehicle set fuelType = ? where registrationNum = ?";
+    String sql = "update  Vehicle set fuelType = ? where registrationNum = ? "
+            + "and exists(select * from Parked where Parked.registrationNum = Vehicle.registrationNum)";
         Connection conn = DB.get_instance();
         try (
             PreparedStatement query = conn.prepareStatement(sql);
@@ -102,7 +103,8 @@ public class cf170065_VehicleOperationsImplementation implements VehicleOperatio
 
     @Override
     public boolean changeConsumption(String regNum, BigDecimal consumption) {
-     String sql = "update  Vehicle set consumption = ? where registrationNum = ?";
+     String sql = "update  Vehicle set consumption = ? where registrationNum = ?"
+             + "and exists (select * from Parked where Parked.registrationNum= Vehicle.registrationNum)";
         Connection conn = DB.get_instance();
         try (
             PreparedStatement query = conn.prepareStatement(sql);
@@ -121,7 +123,8 @@ public class cf170065_VehicleOperationsImplementation implements VehicleOperatio
 
     @Override
     public boolean changeCapacity(String regNum, BigDecimal cap) {
-          String sql = "update  Vehicle set capacity = ? where registrationNum = ?";
+          String sql = "update  Vehicle set capacity = ? where registrationNum = ?"
+                  + "and exists (select * from Parked where Parked.registrationNum = Vehicle.registrationNum )";
         Connection conn = DB.get_instance();
         try (
             PreparedStatement query = conn.prepareStatement(sql);
@@ -142,8 +145,15 @@ public class cf170065_VehicleOperationsImplementation implements VehicleOperatio
     @Override
     public boolean parkVehicle(String licencePlate, int idStockroom) {
         try {
+            String sql2 = "Select * from Courier where status=1 and currentlyDriving=?";
+            
             String sql = "Insert into Parked(idStockroom, registrationNum) value(?,?) ";
             Connection conn= DB.get_instance();
+            PreparedStatement check = conn.prepareStatement(sql2);
+            check.setString(1, licencePlate);
+            ResultSet rs =check.executeQuery();
+            if(rs.next()) return false;
+                  
             PreparedStatement query = conn.prepareStatement(sql);
             query.setInt(1, idStockroom);
             query.setString(2, licencePlate);

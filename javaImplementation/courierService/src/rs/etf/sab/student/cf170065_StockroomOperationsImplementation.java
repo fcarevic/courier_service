@@ -63,9 +63,9 @@ public class cf170065_StockroomOperationsImplementation implements StockroomOper
     }
     @Override
     public boolean deleteStockroom(int stockroom_id) {
-             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-   
-           String sql = "delete from Stockroon where idStockroom = ?";
+           
+           String sql = "delete from Stockroom where idStockroom = ? and not exists(select * from Package where currently_atAdress = Stockroom.idAdress "+
+                    "and not exists( Select * from PackageInVehicle where Package.idPackage=PackageInVehicle.idPackage ))";
         Connection conn = DB.get_instance();
        try( PreparedStatement query = conn.prepareStatement(sql);)
        {
@@ -81,8 +81,17 @@ public class cf170065_StockroomOperationsImplementation implements StockroomOper
     
 
     @Override
-    public int deleteStockroomFromCity(int arg0) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public int deleteStockroomFromCity(int cityId) {
+        
+        List<Integer> allAdresses = getStocroomAdressesFromCity(cityId);
+        List<Integer> allIds = new LinkedList<>();
+        for(int i : allAdresses){
+            allIds.add(getStockroomOnAdress(i));
+        }
+        if(allIds.isEmpty()) return -1;
+        if(deleteStockroom(allIds.get(0))) return allIds.remove(0);
+        return allIds.remove(0); //treba li ovo???
+    
     }
 
     @Override

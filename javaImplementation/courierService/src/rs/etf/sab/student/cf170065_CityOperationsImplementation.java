@@ -26,17 +26,19 @@ public class cf170065_CityOperationsImplementation implements CityOperations{
     public int insertCity(String name, String postalCode) {
          String sql = "insert into City(name, postalCode) values(?,?)";
             Connection conn = DB.get_instance();
-        try (PreparedStatement query = conn.prepareStatement(sql);){
+        try (PreparedStatement query = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);){
                 query.setString(1, name);
                 query.setString(2, postalCode);
                 
-                return query.executeUpdate();
+               query.executeUpdate();
+               ResultSet rs= query.getGeneratedKeys();
+               if(rs.next())return rs.getInt(1);
                 
             
         } catch (SQLException ex) {
             Logger.getLogger(cf170065_CityOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return 0;
+        return -1;
         
      }
 

@@ -16,23 +16,17 @@ CREATE TABLE [Adress]
 )
 go
 
-CREATE TABLE [Buyer]
-( 
-	[userName]           varchar(100)  NOT NULL 
-)
-go
-
 CREATE TABLE [City]
 ( 
 	[idCity]             integer  IDENTITY  NOT NULL ,
-	[naziv]              varchar(100)  NULL ,
-	[postanski_broj]     integer  NULL 
+	[name]               varchar(100)  NULL ,
+	[postalCode]         varchar(100)  NULL 
 )
 go
 
 CREATE TABLE [Courier]
 ( 
-	[dirverLicence]      varchar(100)  NULL ,
+	[dirversLicence]     varchar(100)  NULL ,
 	[userName]           varchar(100)  NOT NULL ,
 	[profit]             decimal(10,3)  NULL ,
 	[status]             smallint  NULL ,
@@ -57,21 +51,34 @@ go
 
 CREATE TABLE [Package]
 ( 
+	[price]              decimal(10,3)  NULL ,
+	[created_at]         datetime  NULL ,
+	[accepted_at]        datetime  NULL ,
+	[status]             integer  NULL 
+	CONSTRAINT [Validation_Rule_310_503122986]
+		CHECK  ( status BETWEEN 0 AND 4 ),
+	[currently_atAdress] integer  NULL ,
+	[idPackage]          integer  NOT NULL 
+)
+go
+
+CREATE TABLE [PackageInVehicle]
+( 
+	[registrationNum]    char(18)  NOT NULL ,
+	[idPackage]          integer  NOT NULL 
+)
+go
+
+CREATE TABLE [PackageRequest]
+( 
 	[idPackage]          integer  IDENTITY  NOT NULL ,
 	[type]               integer  NULL 
 	CONSTRAINT [tipPaketa]
 		CHECK  ( type BETWEEN 0 AND 3 ),
 	[weight]             decimal(10,3)  NULL ,
-	[price]              decimal(10,3)  NULL ,
-	[created_at]         datetime  NULL ,
-	[accepted_at]        datetime  NULL ,
-	[status]             integer  NULL 
-	CONSTRAINT [statusPaketa]
-		CHECK  ( status BETWEEN 0 AND 4 ),
 	[userName]           varchar(100)  NOT NULL ,
 	[fromAdress]         integer  NOT NULL ,
-	[toAdress]           integer  NOT NULL ,
-	[currently_atAdress] integer  NOT NULL 
+	[toAdress]           integer  NOT NULL 
 )
 go
 
@@ -118,10 +125,6 @@ ALTER TABLE [Adress]
 	ADD CONSTRAINT [XPKAdress] PRIMARY KEY  CLUSTERED ([idAdress] ASC)
 go
 
-ALTER TABLE [Buyer]
-	ADD CONSTRAINT [XPKBuyer] PRIMARY KEY  CLUSTERED ([userName] ASC)
-go
-
 ALTER TABLE [City]
 	ADD CONSTRAINT [XPKCity] PRIMARY KEY  CLUSTERED ([idCity] ASC)
 go
@@ -130,8 +133,16 @@ ALTER TABLE [Courier]
 	ADD CONSTRAINT [XPKCourier] PRIMARY KEY  CLUSTERED ([userName] ASC)
 go
 
+ALTER TABLE [Courier]
+	ADD CONSTRAINT [XAK1CourierDriversLicence] UNIQUE ([dirversLicence]  ASC)
+go
+
 ALTER TABLE [CourierRequests]
 	ADD CONSTRAINT [XPKCourierRequests] PRIMARY KEY  CLUSTERED ([userName] ASC)
+go
+
+ALTER TABLE [CourierRequests]
+	ADD CONSTRAINT [XAK1CourierRequestsdriverLicence] UNIQUE ([driversLicence]  ASC)
 go
 
 ALTER TABLE [EverDriven]
@@ -142,8 +153,16 @@ ALTER TABLE [Package]
 	ADD CONSTRAINT [XPKPackage] PRIMARY KEY  CLUSTERED ([idPackage] ASC)
 go
 
+ALTER TABLE [PackageInVehicle]
+	ADD CONSTRAINT [XPKPackageInVehicle] PRIMARY KEY  CLUSTERED ([idPackage] ASC)
+go
+
+ALTER TABLE [PackageRequest]
+	ADD CONSTRAINT [XPKPackageRequest] PRIMARY KEY  CLUSTERED ([idPackage] ASC)
+go
+
 ALTER TABLE [Parked]
-	ADD CONSTRAINT [XPKParked] PRIMARY KEY  CLUSTERED ([idStockroom] ASC,[registrationNum] ASC)
+	ADD CONSTRAINT [XPKParked] PRIMARY KEY  CLUSTERED ([registrationNum] ASC)
 go
 
 ALTER TABLE [Stockroom]
@@ -169,13 +188,6 @@ go
 ALTER TABLE [Adress]
 	ADD CONSTRAINT [R_1] FOREIGN KEY ([idCity]) REFERENCES [City]([idCity])
 		ON DELETE NO ACTION
-		ON UPDATE CASCADE
-go
-
-
-ALTER TABLE [Buyer]
-	ADD CONSTRAINT [R_7] FOREIGN KEY ([userName]) REFERENCES [Users]([userName])
-		ON DELETE CASCADE
 		ON UPDATE CASCADE
 go
 
@@ -209,32 +221,52 @@ go
 ALTER TABLE [EverDriven]
 	ADD CONSTRAINT [R_10] FOREIGN KEY ([registrationNum]) REFERENCES [Vehicle]([registrationNum])
 		ON DELETE NO ACTION
-		ON UPDATE no action
+		ON UPDATE CASCADE
 go
 
 
 ALTER TABLE [Package]
+	ADD CONSTRAINT [R_17] FOREIGN KEY ([currently_atAdress]) REFERENCES [Adress]([idAdress])
+		ON DELETE NO ACTION
+		ON UPDATE CASCADE
+go
+
+ALTER TABLE [Package]
+	ADD CONSTRAINT [R_18] FOREIGN KEY ([idPackage]) REFERENCES [PackageRequest]([idPackage])
+		ON DELETE NO ACTION
+		ON UPDATE CASCADE
+go
+
+
+ALTER TABLE [PackageInVehicle]
+	ADD CONSTRAINT [R_19] FOREIGN KEY ([registrationNum]) REFERENCES [Vehicle]([registrationNum])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+ALTER TABLE [PackageInVehicle]
+	ADD CONSTRAINT [R_20] FOREIGN KEY ([idPackage]) REFERENCES [PackageRequest]([idPackage])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+
+ALTER TABLE [PackageRequest]
 	ADD CONSTRAINT [R_11] FOREIGN KEY ([userName]) REFERENCES [Users]([userName])
 		ON DELETE NO ACTION
 		ON UPDATE CASCADE
 go
 
-ALTER TABLE [Package]
+ALTER TABLE [PackageRequest]
 	ADD CONSTRAINT [R_12] FOREIGN KEY ([fromAdress]) REFERENCES [Adress]([idAdress])
 		ON DELETE NO ACTION
 		ON UPDATE CASCADE
 go
 
-ALTER TABLE [Package]
+ALTER TABLE [PackageRequest]
 	ADD CONSTRAINT [R_13] FOREIGN KEY ([toAdress]) REFERENCES [Adress]([idAdress])
 		ON DELETE NO ACTION
-		ON UPDATE no action
-go
-
-ALTER TABLE [Package]
-	ADD CONSTRAINT [R_14] FOREIGN KEY ([currently_atAdress]) REFERENCES [Adress]([idAdress])
-		ON DELETE NO ACTION
-		ON UPDATE no action
+		ON UPDATE CASCADE
 go
 
 
@@ -261,5 +293,5 @@ go
 ALTER TABLE [Users]
 	ADD CONSTRAINT [R_3] FOREIGN KEY ([idAdress]) REFERENCES [Adress]([idAdress])
 		ON DELETE NO ACTION
-		ON UPDATE no action
+		ON UPDATE CASCADE
 go

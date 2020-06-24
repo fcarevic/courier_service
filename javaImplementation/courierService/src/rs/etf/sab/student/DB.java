@@ -17,7 +17,7 @@ import java.util.logging.Logger;
  */
 public class DB {
     
-    private static final String url= "jdbc:sqlserver://localhost:1433;database=;";
+    private static final String url= "jdbc:sqlserver://localhost:1433;database=projekat2020;";
     private static final String user = "filip";
     private static final String password= "1234";
     private static DB instance;

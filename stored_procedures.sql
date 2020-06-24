@@ -50,7 +50,7 @@ begin
  delete from CourierRequests where 1=1;
  delete from Vehicle where 1=1;
  delete from Stockroom where 1=1;
- delete from projekat2020.User where 1=1;
+ delete from Users where 1=1;
  delete from Adress where 1=1;
  delete from City where 1=1;
 

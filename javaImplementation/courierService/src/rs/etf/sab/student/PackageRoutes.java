@@ -34,6 +34,7 @@ public class PackageRoutes {
     private cf170065_StockroomOperationsImplementation stockroomOperations = new cf170065_StockroomOperationsImplementation();
     private cf170065_UserOperationsImplementation userOperations = new cf170065_UserOperationsImplementation();
     private cf170065_VehicleOperationsImplementation vehicleOperations= new cf170065_VehicleOperationsImplementation();
+   private cf170065_GeneralOperationsImplementation generalOperations = new cf170065_GeneralOperationsImplementation();
     private PackageRoutes(){}
    
 
@@ -92,7 +93,9 @@ public class PackageRoutes {
     public cf170065_VehicleOperationsImplementation getVehicleOperations() {
         return vehicleOperations;
     }
-
+    public cf170065_GeneralOperationsImplementation getGeneralOperations(){
+        return generalOperations;
+    }
     
     
     

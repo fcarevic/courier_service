@@ -26,7 +26,7 @@ public class cf170065_AdressOperationsImplementation implements AddressOperation
     @Override
     public int insertAddress(String street, int number, int city_id, int xcord, int ycord) {
           String sql = "insert into Adress(xCord, yCord, street, number,idCity)"
-                    + "          value (?,?,?,?,?)";
+                    + "          values (?,?,?,?,?)";
             Connection conn = DB.get_instance();
             int new_id=-1;
         try(

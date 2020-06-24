@@ -24,7 +24,12 @@ public class cf170065_CourierRequestOperationsImplementation implements CourierR
 
     @Override
     public boolean insertCourierRequest(String username, String driversLicence) {
-        String sql = "insert into CourierRequests(userName, driversLicence) value(?,?)";
+        List<String> allcouriers = PackageRoutes.getInstance().getCourierOperations().getAllCouriers();
+        if(allcouriers.contains(username)) return false;
+        
+         if(PackageRoutes.getInstance().getCourierRequestOperation().checkExistsDriversLicence(driversLicence, username)) return false;
+       
+        String sql = "insert into CourierRequests(userName, driversLicence) values(?,?)";
         Connection conn = DB.get_instance();
         try (
             PreparedStatement query = conn.prepareStatement(sql);
@@ -39,7 +44,27 @@ public class cf170065_CourierRequestOperationsImplementation implements CourierR
         }
         return false;
     }
-
+    
+    public boolean checkExistsDriversLicence(String driversLicence, String username){
+      Connection conn = DB.get_instance();
+      String sql = "select * from courierRequests where driversLicence = ? and username <> ?";
+            String sql2 = "select * from courier where dirversLicence = ? and username <> ?";
+        try (     PreparedStatement q = conn.prepareStatement(sql);
+                PreparedStatement q2 = conn.prepareStatement(sql2);
+                ){
+            q.setString(1, driversLicence);
+            q2.setString(1, driversLicence);
+            q.setString(2, username);
+            q2.setString(2, username);
+            
+            ResultSet rs1 = q.executeQuery();
+            ResultSet rs2 = q2.executeQuery();
+            if(rs1.next() || rs2.next()) return true;
+         } catch (SQLException ex) {
+            Logger.getLogger(cf170065_CourierRequestOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
+    }
     @Override
     public boolean deleteCourierRequest(String userName) {
         String sql = "delete from CourierRequests where userName = ?";
@@ -61,6 +86,8 @@ public class cf170065_CourierRequestOperationsImplementation implements CourierR
     @Override
     public boolean changeDriverLicenceNumberInCourierRequest(String userName, String drivingLicence) {
         //OVO JE GRESKA?
+         if(PackageRoutes.getInstance().getCourierRequestOperation().checkExistsDriversLicence(drivingLicence,  userName)) return false;
+       
      String sql = "update  CourierRequests set driversLicence = ? where userName = ?";
         Connection conn = DB.get_instance();
         try (
@@ -107,10 +134,11 @@ public class cf170065_CourierRequestOperationsImplementation implements CourierR
         try {
             
             
-            String getDriversLicence = "select driversLicence from  CourierRequest where userName = ?";
+            String getDriversLicence = "select driversLicence from  CourierRequests where userName = ?";
             Connection conn = DB.get_instance();
             conn.setAutoCommit(false);
             try (PreparedStatement query = conn.prepareStatement(getDriversLicence);){
+                query.setString(1,userName);
                 ResultSet result = query.executeQuery();
                 String driversLicene = null;
                 if(result.next())
@@ -118,9 +146,9 @@ public class cf170065_CourierRequestOperationsImplementation implements CourierR
                 else throw new SQLException("isforsiran izuzetak");
                 
                boolean flag= true;
-               
-               flag= flag&& (new cf170065_CourierOperationsImplementation().insertCourier(userName, driversLicene));
                flag= flag&& deleteCourierRequest(userName);
+               flag= flag&& (new cf170065_CourierOperationsImplementation().insertCourier(userName, driversLicene));
+               
                
                if(!flag)conn.rollback();
                else conn.commit();

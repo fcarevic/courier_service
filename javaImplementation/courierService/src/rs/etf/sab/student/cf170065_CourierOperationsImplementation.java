@@ -24,7 +24,8 @@ public class cf170065_CourierOperationsImplementation  implements CourierOperati
 
     @Override
     public boolean insertCourier(String username, String licencePlate) {
-             String sql = "insert into Couirier (name, licencePlate, profit , status, currentlyDriving, numberOfDeliveredPackages) "
+        if(PackageRoutes.getInstance().getCourierRequestOperation().checkExistsDriversLicence(licencePlate, username)) return false;
+             String sql = "insert into Courier (username, dirversLicence, profit , status, currentlyDriving, numberOfDeliveredPackages) "
                      + "        values(?,?,0,0,null,0)";
             Connection conn = DB.get_instance();
         try(      PreparedStatement query = conn.prepareStatement(sql);
@@ -81,7 +82,7 @@ public class cf170065_CourierOperationsImplementation  implements CourierOperati
     @Override
     public List<String> getAllCouriers() {
          List<String> list= new LinkedList<>();
-                String sql = "select username from Courier orderby profit desc";
+                String sql = "select username from Courier order by profit desc";
             Connection conn = DB.get_instance();
         try(      PreparedStatement query = conn.prepareStatement(sql);
                
@@ -155,7 +156,7 @@ public class cf170065_CourierOperationsImplementation  implements CourierOperati
     public  boolean assignVehicle(String username, String myVehicle) {
           boolean flag =false;
         try {
-            String sql = "Insert into EverDriven(userName, registrationNum) value (?,?)";
+            String sql = "Insert into EverDriven(userName, registrationNum) values (?,?)";
             String sql2 = "Update Courier set currentlyDriving = ? where userName=? and status = 0";
             
             Connection conn= DB.get_instance();

@@ -24,12 +24,16 @@ public class cf170065_StockroomOperationsImplementation implements StockroomOper
 
     @Override
     public int insertStockroom(int adress) {
-        String sql = "insert into Stockroon (idAdress) value (?)";
+        
+        List<Integer> allAdresses= getStocroomAdressesFromCity(PackageRoutes.getInstance().getAddressOperations().getCityId(adress));
+        if(!allAdresses.isEmpty()) return -1;
+
+        String sql = "insert into Stockroom (idAdress) values (?)";
         Connection conn = DB.get_instance();
        try( PreparedStatement query = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);)
        {
             query.setInt(1, adress);
-            if (query.execute())
+            if (query.executeUpdate()==1)
             {
                 ResultSet generatedKeys = query.getGeneratedKeys();
                 if(generatedKeys.next()) 

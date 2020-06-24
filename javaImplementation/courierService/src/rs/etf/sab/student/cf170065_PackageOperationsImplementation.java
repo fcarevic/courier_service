@@ -27,7 +27,7 @@ public class cf170065_PackageOperationsImplementation implements PackageOperatio
 
     @Override
     public int insertPackage(int addressFrom, int addressTo, String username, int type, BigDecimal weight) {
-     String sql = "insert into PackageRequests(type, weight, userName, fromAdress, toAdress) value (?,?,?,?,?)";
+     String sql = "insert into PackageRequests(type, weight, userName, fromAdress, toAdress) values (?,?,?,?,?)";
         Connection conn = DB.get_instance();
         try (  PreparedStatement query = conn.prepareStatement(sql);){
           query.setInt(1,type);
@@ -378,7 +378,7 @@ public class cf170065_PackageOperationsImplementation implements PackageOperatio
 
     public  boolean insertPackageInVehicle(int packageId, String myVehicle) {
         try {
-            String sql = "Insert into PackageInVehicle(idPackage, registrationNum) value(?,?)";
+            String sql = "Insert into PackageInVehicle(idPackage, registrationNum) values(?,?)";
             Connection conn= DB.get_instance();
             PreparedStatement query= conn.prepareStatement(sql);
             query.setString(2, myVehicle);

@@ -15,6 +15,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.junit.runner.Result;
 import rs.etf.sab.operations.VehicleOperations;
 
 /**
@@ -25,9 +26,24 @@ public class cf170065_VehicleOperationsImplementation implements VehicleOperatio
 
     @Override
     public boolean insertVehicle(String licencePlateNumber, int fuelType, BigDecimal fuelConsumption, BigDecimal capacity) {
-        String sql = "select * from Vehicle";
+        if(getAllVehichles().contains(licencePlateNumber)) return false;
+    
+        String sql = "insert into vehicle (registrationNum,fuelType, consumption, capacity) values(?,?,?,?)";
         Connection conn = DB.get_instance();
-        try ( Statement query = conn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);){
+        try(    PreparedStatement query = conn.prepareStatement(sql);
+        ) {
+            
+            query.setString(1, licencePlateNumber);
+            query.setInt(2, fuelType);
+            query.setBigDecimal(3, fuelConsumption);
+            query.setBigDecimal(4, capacity);
+            return query.executeUpdate()==1;
+            
+            
+            
+            /*   String sql = "select * from Vehicle";
+            Connection conn = DB.get_instance();
+            try ( Statement query = conn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);){
             ResultSet result = query.executeQuery(sql);
             result.moveToInsertRow();
             result.updateString("registrationNum", licencePlateNumber);
@@ -35,11 +51,16 @@ public class cf170065_VehicleOperationsImplementation implements VehicleOperatio
             result.updateBigDecimal("consumption", fuelConsumption);
             result.updateBigDecimal("capacity", capacity);
             result.insertRow();
+            result.close();
             return true;
+            } catch (SQLException ex) {
+            Logger.getLogger(cf170065_VehicleOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            return false;*/
         } catch (SQLException ex) {
             Logger.getLogger(cf170065_VehicleOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
         }
-             return false;
+        return false;
       }
 
     @Override
@@ -82,10 +103,27 @@ public class cf170065_VehicleOperationsImplementation implements VehicleOperatio
             
      return list;   }
 
+    
+    public boolean checkParked(String regNum){
+    String sql = "select * from Parked where Parked.registrationNum = ? ";
+    Connection con = DB.get_instance();
+        try (     PreparedStatement query = con.prepareStatement(sql);
+      ) {
+            query.setString(1, regNum);
+            ResultSet rs =query.executeQuery();
+            return rs.next();
+         } catch (SQLException ex) {
+            Logger.getLogger(cf170065_VehicleOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    
+    return false;
+    }
+    
     @Override
     public boolean changeFuelType(String regNum, int fuelType) {
-    String sql = "update  Vehicle set fuelType = ? where registrationNum = ? "
-            + "and exists(select * from Parked where Parked.registrationNum = Vehicle.registrationNum)";
+        if(!checkParked(regNum)) return false;
+    String sql = "update  Vehicle set fuelType = ? where registrationNum = ? ";
+           
         Connection conn = DB.get_instance();
         try (
             PreparedStatement query = conn.prepareStatement(sql);
@@ -103,8 +141,9 @@ public class cf170065_VehicleOperationsImplementation implements VehicleOperatio
 
     @Override
     public boolean changeConsumption(String regNum, BigDecimal consumption) {
-     String sql = "update  Vehicle set consumption = ? where registrationNum = ?"
-             + "and exists (select * from Parked where Parked.registrationNum= Vehicle.registrationNum)";
+        if(!checkParked(regNum)) return false;
+     String sql = "update  Vehicle set consumption = ? where registrationNum = ?";
+           
         Connection conn = DB.get_instance();
         try (
             PreparedStatement query = conn.prepareStatement(sql);
@@ -123,8 +162,9 @@ public class cf170065_VehicleOperationsImplementation implements VehicleOperatio
 
     @Override
     public boolean changeCapacity(String regNum, BigDecimal cap) {
-          String sql = "update  Vehicle set capacity = ? where registrationNum = ?"
-                  + "and exists (select * from Parked where Parked.registrationNum = Vehicle.registrationNum )";
+        if(!checkParked(regNum)) return false;
+          String sql = "update  Vehicle set capacity = ? where registrationNum = ?";
+            
         Connection conn = DB.get_instance();
         try (
             PreparedStatement query = conn.prepareStatement(sql);
@@ -147,7 +187,7 @@ public class cf170065_VehicleOperationsImplementation implements VehicleOperatio
         try {
             String sql2 = "Select * from Courier where status=1 and currentlyDriving=?";
             
-            String sql = "Insert into Parked(idStockroom, registrationNum) value(?,?) ";
+            String sql = "Insert into Parked(idStockroom, registrationNum) values(?,?) ";
             Connection conn= DB.get_instance();
             PreparedStatement check = conn.prepareStatement(sql2);
             check.setString(1, licencePlate);

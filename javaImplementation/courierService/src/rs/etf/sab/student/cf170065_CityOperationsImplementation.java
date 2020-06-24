@@ -24,12 +24,18 @@ public class cf170065_CityOperationsImplementation implements CityOperations{
 
     @Override
     public int insertCity(String name, String postalCode) {
+        String sql2 = "select * from city where  postalCode = ?";
          String sql = "insert into City(name, postalCode) values(?,?)";
             Connection conn = DB.get_instance();
-        try (PreparedStatement query = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);){
+        
+         
+        try ( PreparedStatement q = conn.prepareStatement(sql2);
+                PreparedStatement query = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);){
                 query.setString(1, name);
                 query.setString(2, postalCode);
-                
+              q.setString(1, postalCode);
+               ResultSet check = q.executeQuery();
+               if(check.next()) return -1;
                query.executeUpdate();
                ResultSet rs= query.getGeneratedKeys();
                if(rs.next())return rs.getInt(1);
@@ -48,17 +54,17 @@ public class cf170065_CityOperationsImplementation implements CityOperations{
              String sql = "delete from City where name= ?";
             Connection conn = DB.get_instance();
     
-        for(String name : names){
+        
            try (PreparedStatement query = conn.prepareStatement(sql);){
-                query.setString(1, name);
+               for(String name : names){ query.setString(1, name);
                 
                 
                 count += query.executeUpdate();
                 
-            
+               }
         } catch (SQLException ex) {
             Logger.getLogger(cf170065_CityOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        
         }
         return count;
      }

@@ -26,14 +26,18 @@ public class cf170065_AdressOperationsImplementation implements AddressOperation
     @Override
     public int insertAddress(String street, int number, int city_id, int xcord, int ycord) {
           String sql = "insert into Adress(xCord, yCord, street, number,idCity)"
-                    + "          values (?,?,?,?,?)";
+                    + "values (?,?,?,?,?)";
+          String sql2 = "Select * from Adress where xCord = ? and yCord=?";
             Connection conn = DB.get_instance();
             int new_id=-1;
         try(
-                PreparedStatement query = conn.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS );) {
+                PreparedStatement query = conn.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS );
+                PreparedStatement q = conn.prepareStatement(sql2)) {
           
-          
-            
+          q.setInt(1, xcord);
+            q.setInt(2, ycord);
+             ResultSet check = q.executeQuery();
+            if(check.next()) return -1;
             query.setInt(1, xcord);
             query.setInt(2, ycord);
             query.setString(3, street);
@@ -107,7 +111,7 @@ public class cf170065_AdressOperationsImplementation implements AddressOperation
     @Override
     public List<Integer> getAllAddressesFromCity(int city_id) {
         List<Integer> list= new LinkedList<>();
-        String sql = "select idAdress form Adress where idCity = ?";
+        String sql = "select idAdress from Adress where idCity = ?";
         Connection conn = DB.get_instance();
         try (PreparedStatement query = conn.prepareStatement(sql)) {
             query.setInt(1, city_id);
@@ -122,13 +126,13 @@ public class cf170065_AdressOperationsImplementation implements AddressOperation
                    Logger.getLogger(cf170065_CityOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
      
         }
-        return list;
+        return null;
      }
 
     @Override
     public List<Integer> getAllAddresses() {
         List<Integer> list= new LinkedList<>();
-        String sql = "select idAdress form Adress ";
+        String sql = "select idAdress from Adress ";
         Connection conn = DB.get_instance();
         try (PreparedStatement query = conn.prepareStatement(sql)) {
            

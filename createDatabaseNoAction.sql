@@ -30,7 +30,7 @@ CREATE TABLE [Courier]
 	[userName]           varchar(100)  NOT NULL ,
 	[profit]             decimal(10,3)  NULL ,
 	[status]             smallint  NULL ,
-	[currentlyDriving]   char(18)  NULL ,
+	[currentlyDriving]   varchar(100)  NULL ,
 	[numberOfDeliveredPackages] integer  NULL 
 )
 go
@@ -45,7 +45,7 @@ go
 CREATE TABLE [EverDriven]
 ( 
 	[userName]           varchar(100)  NOT NULL ,
-	[registrationNum]    char(18)  NOT NULL 
+	[registrationNum]    varchar(100)  NOT NULL 
 )
 go
 
@@ -64,7 +64,7 @@ go
 
 CREATE TABLE [PackageInVehicle]
 ( 
-	[registrationNum]    char(18)  NOT NULL ,
+	[registrationNum]    varchar(100)  NOT NULL ,
 	[idPackage]          integer  NOT NULL 
 )
 go
@@ -85,7 +85,7 @@ go
 CREATE TABLE [Parked]
 ( 
 	[idStockroom]        integer  NOT NULL ,
-	[registrationNum]    char(18)  NOT NULL 
+	[registrationNum]    varchar(100)  NOT NULL 
 )
 go
 
@@ -108,7 +108,7 @@ go
 
 CREATE TABLE [Vehicle]
 ( 
-	[registrationNum]    char(18)  NOT NULL ,
+	[registrationNum]    varchar(100)  NOT NULL ,
 	[fuelType]           integer  NULL 
 	CONSTRAINT [proveraTipa]
 		CHECK  ( fuelType BETWEEN 0 AND 2 ),

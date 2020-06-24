@@ -30,14 +30,17 @@ public class cf170065_UserOperationsImplementation implements UserOperations{
             boolean upper=false, lower = false, number = false, character= false;
             for(int i = 0 ; i < password.length(); i++){
                 char c= password.charAt(i);
-                if (Character.isAlphabetic(c)){
                     if(Character.isDigit(c)) number=true;
                     else if (Character.isLowerCase(c)) lower= true;
                     else if (Character.isUpperCase(c)) upper= true;
                     else  character=true;
-                } else System.err.println("NIJE LETTER");
                 
-            }String sql = "insert into User(userName, firstName,lastName, password, idAdress) value(?,?,?,?,?)";
+            }
+            
+            if(!lower ||!character || !number || !upper) {
+               return false;}
+            
+            String sql = "insert into Users(userName, firstName,lastName, password, idAdress) values(?,?,?,?,?)";
             Connection conn = DB.get_instance();
             PreparedStatement query = conn.prepareStatement(sql);
             query.setString(1,userName);
@@ -58,7 +61,7 @@ public class cf170065_UserOperationsImplementation implements UserOperations{
 
     @Override
     public boolean declareAdmin(String username) {
-        String sql = "insert into Administrator(userName) value(?)";
+        String sql = "insert into Administrator(userName) values(?)";
         Connection conn = DB.get_instance();
         try (PreparedStatement query = conn.prepareStatement(sql);){
             
@@ -77,7 +80,8 @@ public class cf170065_UserOperationsImplementation implements UserOperations{
     public int getSentPackages(String... usernames) {
         int count = 0;
         boolean postojiKorisnik=false;
-        String sql = "select count(*) from PackageRequest where userName = ?";
+        String sql = "select count(*) from PackageRequest where userName = ? "
+                + "and exists(select * from Package where Package.IdPackage = PackageRequest.IdPackage and Package.accepted_at is not null)";
 
         Connection conn = DB.get_instance();
         List<String> allUsers= getAllUsers();
@@ -102,8 +106,8 @@ public class cf170065_UserOperationsImplementation implements UserOperations{
     @Override
     public int deleteUsers(String... usernames) {
         int count = 0; 
-        String sql = "delete from User where userName  in ?";
-        String delBuyer = "delete  from Buyer where userName= ?";
+        String sql = "delete from Users where userName  =?";
+        String delBuyer = "delete  from Courier where userName= ?";
          String delAdmin = "delete  from Administrator where userName= ?";
           
         Connection conn = DB.get_instance();
@@ -114,7 +118,7 @@ public class cf170065_UserOperationsImplementation implements UserOperations{
                 ) {
                     delBuyerQ.setString(1, username);
                     delAdminQ.setString(1,username);
-                    
+                    query.setString(1, username);
                     delBuyerQ.executeUpdate();
                     delAdminQ.executeUpdate();
                     
@@ -137,7 +141,7 @@ public class cf170065_UserOperationsImplementation implements UserOperations{
     @Override
     public List<String> getAllUsers() {
            List<String> list= new LinkedList<>();
-                String sql = "select username from User";
+                String sql = "select username from Users";
             Connection conn = DB.get_instance();
         try(      PreparedStatement query = conn.prepareStatement(sql);
                
@@ -156,7 +160,7 @@ public class cf170065_UserOperationsImplementation implements UserOperations{
     
     public int getUsersCity(String username){
         try {
-            String sql = "Select Adress.idCity from Adress,User where User.userName = ? and User.idAdress = Adress.idAdress ";
+            String sql = "Select Adress.idCity from Adress,Users where Users.userName = ? and Users.idAdress = Adress.idAdress ";
             Connection conn = DB.get_instance();
             PreparedStatement query = conn.prepareStatement(sql);
             query.setString(1, username);

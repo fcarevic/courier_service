@@ -27,8 +27,8 @@ public class cf170065_DriveOperationsImplementation implements DriveOperation{
     private static final int TO_DELIVER=1;
     private static final int TO_COLLECT=0;
     private static final int CREATED=0, ACCEPTED=1,COLLECTED=2,DELIVERED=3,REJECTED=4 ,RETURN_TO_BEGINING=5;
-    private static final int[] fuelPrice={15,36,32};
-    private static final int GAS=0, DIESEL=2, PETROL=1; 
+    private static final int[] fuelPrice={15,32,36};
+    private static final int GAS=0, DIESEL=1, PETROL=2; 
 
     @Override
     public boolean planingDrive(String username) {
@@ -73,6 +73,17 @@ public class cf170065_DriveOperationsImplementation implements DriveOperation{
                  collecting.clear();
                  currentCap= planRouteofCollectingPackages(idNewCity, collecting, capacity, currentCap);
                  if(!collecting.isEmpty()){
+                     for(int j=0; j<collecting.size();){
+                         boolean deleted=false;
+                        for (int k=0;k<route.size() && !deleted;k++){
+                                if(route.get(k).getIdPackage()==collecting.get(j).getIdPackage() 
+                                        &&( route.get(k).getStatus()== collecting.get(j).getStatus()||route.get(k).getStatus()!= collecting.get(j).getStatus() )){
+                                    {collecting.remove(j); deleted=true;}
+                                    
+                                }
+                        }
+                        if(!deleted)j++;
+                     }
                      route.addAll(route.indexOf(pi)+1, collecting);
                     }
                 
@@ -122,6 +133,8 @@ public class cf170065_DriveOperationsImplementation implements DriveOperation{
                 }
             }  
         PackagePlanInfo remove = route.remove(ind);
+        lastX=remove.getxCordTo();
+        lastY=remove.getyCordTo();
         sorted.add(remove);
          }
          
@@ -160,8 +173,7 @@ public class cf170065_DriveOperationsImplementation implements DriveOperation{
                     if(currentCap.add(packageWeight).compareTo(vehicleCapacity)>0) continue;
                     if(checkIfPackageBelongsToAnyRoute(idPackage)) continue;
                      currentCap= currentCap.add(packageWeight);
-                     int city = pr.getPackageOperations().getCurrentLocationOfPackage(idPackage);
-                     int idAdress= pr.getStockroomOperations().getStocroomAdressesFromCity(city).remove(0);
+                     int idAdress= pr.getPackageOperations().getCurrentAdressOfPackage(idPackage);
                      
                      
                      Pair<Integer, Integer> cords = pr.getAddressOperations().getCoordinatesOfAdress(idAdress);
@@ -176,7 +188,7 @@ public class cf170065_DriveOperationsImplementation implements DriveOperation{
                    if(checkIfPackageBelongsToAnyRoute(idPackage)) continue;
                    
                     currentCap= currentCap.add(packageWeight);
-                     int idAdress = pr.getPackageOperations().getCurrentLocationOfPackage(idPackage);
+                     int idAdress = pr.getPackageOperations().getCurrentAdressOfPackage(idPackage);
                      Pair<Integer, Integer> cords = pr.getAddressOperations().getCoordinatesOfAdress(idAdress);
                      
                      pickedPackages.add(new PackagePlanInfo(idPackage, idAdress, cords));
@@ -196,19 +208,41 @@ public class cf170065_DriveOperationsImplementation implements DriveOperation{
         if(ri.getRoute().isEmpty())return -1;
         PackagePlanInfo  pi = ri.getRoute().remove(0);
         if(pi.getStatus()==TO_COLLECT){
-            PackageRoutes.getInstance().getPackageOperations().changeStatus(pi.getIdPackage(), COLLECTED);
+            if(-1!=PackageRoutes.getInstance().getStockroomOperations().getStockroomOnAdress(pi.getIdAdressFrom()))
+            {
+                int idStockroom = PackageRoutes.getInstance().getStockroomOperations().getStockroomOnAdress(pi.getIdAdressFrom());
+                while (pi.getIdPackage()!=-1 && pi.getStatus()==TO_COLLECT && idStockroom==PackageRoutes.getInstance().getStockroomOperations().getStockroomOnAdress(pi.getIdAdressFrom()) ){
+                PackageRoutes.getInstance().getPackageOperations().changeStatus(pi.getIdPackage(), COLLECTED);
             PackageRoutes.getInstance().getPackageOperations().insertPackageInVehicle(pi.getIdPackage(), PackageRoutes.getInstance().getCourierOperations().getCurrentlyDrivingVehicle(username));
             ri.setCurrentIdAdress(pi.getIdAdressFrom());
             ri.setDistancepassed(ri.getDistancepassed()+Math.hypot(pi.getxCordFrom() - ri.getXcordl(), pi.getyCordFrom()- ri.getYcord()));
             ri.setXcordl(pi.getxCordFrom());
             ri.setYcord(pi.getyCordFrom());
+            pi= ri.getRoute().get(0);
             
+                if (pi.getIdPackage()!=-1 && pi.getStatus()==TO_COLLECT && idStockroom==PackageRoutes.getInstance().getStockroomOperations().getStockroomOnAdress(pi.getIdAdressFrom()) )
+                       ri.getRoute().remove(0);
+                else break;
+                
+                
+                }
+            
+            }
+            else{
+                PackageRoutes.getInstance().getPackageOperations().changeStatus(pi.getIdPackage(), COLLECTED);
+            PackageRoutes.getInstance().getPackageOperations().insertPackageInVehicle(pi.getIdPackage(), PackageRoutes.getInstance().getCourierOperations().getCurrentlyDrivingVehicle(username));
+            ri.setCurrentIdAdress(pi.getIdAdressFrom());
+            ri.setDistancepassed(ri.getDistancepassed()+Math.hypot(pi.getxCordFrom() - ri.getXcordl(), pi.getyCordFrom()- ri.getYcord()));
+            ri.setXcordl(pi.getxCordFrom());
+            ri.setYcord(pi.getyCordFrom());
+                    }
             return -2;
         }
         else if(pi.getStatus()==TO_DELIVER){
                 
           PackageRoutes.getInstance().getPackageOperations().changeStatus(pi.getIdPackage(), DELIVERED);
           PackageRoutes.getInstance().getPackageOperations().removePackageFromVehicle(pi.getIdPackage(), PackageRoutes.getInstance().getCourierOperations().getCurrentlyDrivingVehicle(username));
+          PackageRoutes.getInstance().getPackageOperations().setCurrentLocation(pi.getIdPackage(),pi.getIdAdressTo());
           PackageRoutes.getInstance().getCourierOperations().incrementNumberOfDeliveredPackages(username, 1);
            ri.setDistancepassed(ri.getDistancepassed()+Math.hypot(pi.getxCordTo() - ri.getXcordl(), pi.getyCordTo()- ri.getYcord()));
             ri.setXcordl(pi.getxCordTo());
@@ -223,17 +257,18 @@ public class cf170065_DriveOperationsImplementation implements DriveOperation{
             ri.setXcordl(pi.getxCordFrom());
             ri.setYcord(pi.getyCordFrom());
             String licencePlate= PackageRoutes.getInstance().getCourierOperations().getCurrentlyDrivingVehicle(username);
-            List<Integer> packagesInVehicle = getPackagesInVehicle(licencePlate);
+            List<Integer> packagesInVehicle = getPackagesInVehicle(username);
             
             for(int idPackage : packagesInVehicle){
                 PackageRoutes.getInstance().getPackageOperations().setCurrentLocation(idPackage, pi.getIdAdressFrom());
-                
+                PackageRoutes.getInstance().getPackageOperations().removePackageFromVehicle(idPackage, licencePlate);
             
             }
             int fuelType= PackageRoutes.getInstance().getVehicleOperations().getFuelType(licencePlate);
             BigDecimal consumption = PackageRoutes.getInstance().getVehicleOperations().getConsumption(licencePlate);
             BigDecimal deficit = consumption.multiply(new BigDecimal(ri.getDistancepassed())).multiply(new  BigDecimal(fuelPrice[fuelType]));
             BigDecimal profit = ri.getTotalPriceOfDelivery().subtract(deficit);
+            System.out.println("rs.etf.sab.student.cf170065_DriveOperationsImplementation.nextStop() profit kraja" + ri.getTotalPriceOfDelivery());
             
             PackageRoutes.getInstance().getCourierOperations().incrementProfitForCourier(username, profit);
             PackageRoutes.getInstance().getCourierOperations().changeCouriersStatus(username, 0);

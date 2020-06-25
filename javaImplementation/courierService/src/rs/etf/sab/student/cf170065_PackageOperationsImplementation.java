@@ -149,7 +149,7 @@ public class cf170065_PackageOperationsImplementation implements PackageOperatio
             Connection conn = DB.get_instance();
         try (PreparedStatement query = conn.prepareStatement(sql);){
             
-             ResultSet result = query.executeQuery(sql);
+             ResultSet result = query.executeQuery();
              while(result.next())
                  list.add(result.getInt(1));
              
@@ -167,14 +167,14 @@ public class cf170065_PackageOperationsImplementation implements PackageOperatio
     @Override
     public List<Integer> getAllUndeliveredPackagesFromCity(int city_id) {
          List<Integer> list= new LinkedList<>();
-            String sql = "select idPackage from Package,PackageRequest, Adress where Package.status<>0 and Package.status<>4 and "
-                    + "Adress.idAdress = PackageRequest.fromAdress and PackageRequest.idPackage = Package.idPackage"
-                    + "Adress.idCity = ? " ;
+            String sql = "select Package.idPackage from Package,PackageRequest, Adress where (Package.status=2 or Package.status=1)  and "
+                    + "Adress.idAdress = PackageRequest.fromAdress and PackageRequest.idPackage = Package.idPackage and"
+                    + " Adress.idCity = ? " ;
             Connection conn = DB.get_instance();
         try (PreparedStatement query = conn.prepareStatement(sql);){
             query.setInt(1, city_id);
             
-             ResultSet result = query.executeQuery(sql);
+             ResultSet result = query.executeQuery();
              while(result.next())
                  list.add(result.getInt(1));
              
@@ -351,6 +351,21 @@ public class cf170065_PackageOperationsImplementation implements PackageOperatio
         }
         return -1;
      }
+    public int getCurrentAdressOfPackage(int idPackage){
+    String sql = "Select currently_atAdress from Package where Package.idPackage=? and not exists(Select * from PackageinVehicle where PackageinVehicle.idPackage = Package.idPackage ) ";
+    Connection conn = DB.get_instance();
+        try (      PreparedStatement query= conn.prepareStatement(sql);
+     ) {
+            query.setInt(1, idPackage);
+            ResultSet rs = query.executeQuery();
+            if(rs.next())return rs.getInt(1);
+         } catch (SQLException ex) {
+            Logger.getLogger(cf170065_PackageOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    
+    return -1;
+    
+    }
 
     @Override
     public Date getAcceptanceTime(int package_id) {

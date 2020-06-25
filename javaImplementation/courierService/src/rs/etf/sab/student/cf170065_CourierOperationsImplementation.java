@@ -103,8 +103,8 @@ public class cf170065_CourierOperationsImplementation  implements CourierOperati
     public BigDecimal getAverageCourierProfit(int numOfDeliveredPackages) {
        BigDecimal avg= new BigDecimal(0);
         String sql =null;
-        if(numOfDeliveredPackages!=-1) sql="select avg(profit) form Courier where numberOfDeliveredPackages= ?";
-        else sql= "select avg(profit) form Courier";
+        if(numOfDeliveredPackages!=-1) sql="select avg(profit) from Courier where numberOfDeliveredPackages= ?";
+        else sql= "select avg(profit) from Courier";
             Connection conn = DB.get_instance();
         try(      PreparedStatement query = conn.prepareStatement(sql);
                

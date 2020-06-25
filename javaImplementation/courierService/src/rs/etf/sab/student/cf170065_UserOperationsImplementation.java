@@ -26,7 +26,7 @@ public class cf170065_UserOperationsImplementation implements UserOperations{
         try {
             if(!Character.isUpperCase(firstName.charAt(0))) return false;
             if(!Character.isUpperCase(lastName.charAt(0))) return false;
-            if(password.length()!=8) return false;
+            if(password.length()<8) return false;
             boolean upper=false, lower = false, number = false, character= false;
             for(int i = 0 ; i < password.length(); i++){
                 char c= password.charAt(i);

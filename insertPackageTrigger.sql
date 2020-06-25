@@ -67,17 +67,18 @@ declare @id int;
 
 declare @price decimal(10,3);
 declare @curs cursor;
+declare @idFrom int;
 set @curs= cursor for 
-			select  idPackage from inserted;
+			select  idPackage, fromAdress from inserted;
 
 
 open @curs;
-fetch next from @curs into @id;
+fetch next from @curs into @id, @idFrom;
 while (@@FETCH_STATUS=0)
 begin
    exec calculatePrice @id, @price output;
-insert into Package(idPackage, status, price) values (@id, 0, @price);
-fetch next from @curs into  @id;
+insert into Package(idPackage, status, price, currently_atAdress, created_at) values (@id, 0, @price, @idFrom, GETDATE());
+fetch next from @curs into  @id, @idFrom;
 end
 
 

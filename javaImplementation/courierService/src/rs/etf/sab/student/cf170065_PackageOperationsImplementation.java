@@ -16,6 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.util.Pair;
 import javax.management.Query;
 import rs.etf.sab.operations.PackageOperations;
 
@@ -27,9 +28,11 @@ public class cf170065_PackageOperationsImplementation implements PackageOperatio
 
     @Override
     public int insertPackage(int addressFrom, int addressTo, String username, int type, BigDecimal weight) {
-     String sql = "insert into PackageRequests(type, weight, userName, fromAdress, toAdress) values (?,?,?,?,?)";
-        Connection conn = DB.get_instance();
-        try (  PreparedStatement query = conn.prepareStatement(sql);){
+     String sql = "insert into PackageRequest(type, weight, userName, fromAdress, toAdress) values (?,?,?,?,?)";
+     String sql2= "Update Package set price  = ? where idPackage = ?"  ;
+     Connection conn = DB.get_instance();
+        try (  PreparedStatement query = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement q22= conn.prepareStatement(sql2);){
           query.setInt(1,type);
           query.setBigDecimal(2, weight);
           query.setString(3, username);
@@ -37,7 +40,17 @@ public class cf170065_PackageOperationsImplementation implements PackageOperatio
           query.setInt(5,addressTo);
          if ( query.executeUpdate()==1){
              ResultSet keys=  query.getGeneratedKeys();
-             if(keys.next()) return keys.getInt(1);
+             int idPackage=-1;
+             if(keys.next()) {idPackage=keys.getInt(1);
+                 Pair<Integer,Integer> to = PackageRoutes.getInstance().getAddressOperations().getCoordinatesOfAdress(addressTo);
+                Pair<Integer,Integer> from = PackageRoutes.getInstance().getAddressOperations().getCoordinatesOfAdress(addressFrom);
+                double distance = Math.hypot(to.getValue()-from.getValue(), to.getKey()-from.getKey());
+                BigDecimal price = getPackagePrice(type, weight, distance);
+                q22.setBigDecimal(1, price);
+                q22.setInt(2, idPackage);
+                q22.executeUpdate();
+                return idPackage;
+             }
          }
          
           
@@ -52,7 +65,8 @@ public class cf170065_PackageOperationsImplementation implements PackageOperatio
 
     @Override
     public boolean acceptAnOffer(int package_id) {
-        String sql = "update Package set accepted_at = now(), status = 1 where idPackage = ? and status=0";
+        java.sql.Date now = new java.sql.Date(System.currentTimeMillis()); 
+        String sql = "update Package set accepted_at = GETDATE(), status = 1 where idPackage = ? and status=0";
         Connection conn = DB.get_instance();
         try (  PreparedStatement query = conn.prepareStatement(sql);){
           query.setInt(1,package_id);
@@ -178,13 +192,13 @@ public class cf170065_PackageOperationsImplementation implements PackageOperatio
     @Override
     public List<Integer> getAllPackagesCurrentlyAtCity(int city_id) {
   List<Integer> list= new LinkedList<>();
-            String sql = "select idPackage from Package, Adress where Package.status=2 and Package.currently_atAdress= Adress.idAdress and Package.idPackage not in (select idPackage from PackageInVehicle) and"
+            String sql = "select Package.idPackage from Package, Adress where  Package.currently_atAdress= Adress.idAdress and Package.idPackage not in (select idPackage from PackageInVehicle) and"
                     + " Adress.idCity=?";
             Connection conn = DB.get_instance();
         try (PreparedStatement query = conn.prepareStatement(sql);){
             query.setInt(1, city_id);
             
-             ResultSet result = query.executeQuery(sql);
+             ResultSet result = query.executeQuery();
              while(result.next())
                  list.add(result.getInt(1));
              
@@ -290,7 +304,7 @@ public class cf170065_PackageOperationsImplementation implements PackageOperatio
         try (PreparedStatement query = conn.prepareStatement(sql);){
             query.setInt(1, package_id);
             
-             ResultSet result = query.executeQuery(sql);
+             ResultSet result = query.executeQuery();
              while(result.next())
                return result.getInt(1);
                 
@@ -413,7 +427,7 @@ public class cf170065_PackageOperationsImplementation implements PackageOperatio
         Connection conn = DB.get_instance();
         LinkedList<Integer> list= new LinkedList<>();
         String sql = "Select Package.idPackage from Package,Adress, PackageRequest "
-                + "where Package.status = 1 and Adress.idAdress=Package.fromAdress and Adress.idCity=? and PackageRequest.idPackage = Package.idPackage order by PackageRequest.accepted_at desc)";
+                + "where Package.status = 1 and Adress.idAdress=PackageRequest.fromAdress and Adress.idCity=? and PackageRequest.idPackage = Package.idPackage order by Package.accepted_at";
         try (PreparedStatement st= conn.prepareStatement(sql);){
             st.setInt(1, idCity);
             ResultSet rs= st.executeQuery();
@@ -431,8 +445,9 @@ public class cf170065_PackageOperationsImplementation implements PackageOperatio
     public List<Integer> getPackagesFromStockroomInCity(int idCity){
     Connection conn = DB.get_instance();
     LinkedList<Integer> list= new LinkedList<>();
-    String sql = "Select Package.idPackage from Package, Stockroom,Adress"
-            + "where Package.currently_atAdress = Stockroom.idAdress and Adress.idAdress = Stockroom.idAdress and Adress.idCity= ?  and Package.idPackage not in (select idPackage from PackageInVehicle)";
+    String sql = "Select p.idPackage from Package p , Stockroom s , Adress a "
+            + "where p.currently_atAdress = s.idAdress and a.idAdress = s.idAdress and a.idCity=?"
+            + "  and  not exists (select * from PackageInVehicle where PackageInVehicle.idPackage= p.idPackage)";
         try (     PreparedStatement query = conn.prepareStatement(sql);
       ){
             query.setInt(1, idCity);
@@ -501,4 +516,18 @@ public class cf170065_PackageOperationsImplementation implements PackageOperatio
     
         return false;
     }
+    
+     public static BigDecimal getPackagePrice(int type, BigDecimal weight, double distance) {
+/* 14 */     switch (type) {
+/*    */       case 0:
+/* 16 */         return new BigDecimal(115.0D * distance);
+/*    */       case 1:
+/* 18 */         return new BigDecimal((175.0D + weight.doubleValue() * 100.0D) * distance);
+/*    */       case 2:
+/* 20 */         return new BigDecimal((250.0D + weight.doubleValue() * 100.0D) * distance);
+/*    */       case 3:
+/* 22 */         return new BigDecimal((350.0D + weight.doubleValue() * 500.0D) * distance);
+/*    */     } 
+/* 24 */     return null;
+/*    */   }
 }

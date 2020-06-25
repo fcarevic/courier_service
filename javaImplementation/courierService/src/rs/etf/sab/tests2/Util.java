@@ -1,16 +1,16 @@
-/*    */ package rs.etf.sab.tests;
+/*    */ package rs.etf.sab.tests2;
 /*    */ 
 /*    */ import java.math.BigDecimal;
 /*    */ import javafx.util.Pair;
 /*    */ 
 /*    */ public class Util
 /*    */ {
-/*    */   static double euclidean(int x1, int y1, int x2, int y2) {
+/*    */   public static double euclidean(int x1, int y1, int x2, int y2) {
 /*  9 */     return Math.sqrt(((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)));
 /*    */   }
 /*    */ 
 /*    */   
-/*    */   static BigDecimal getPackagePrice(int type, BigDecimal weight, double distance) {
+/*    */    public static BigDecimal getPackagePrice(int type, BigDecimal weight, double distance) {
 /* 14 */     switch (type) {
 /*    */       case 0:
 /* 16 */         return new BigDecimal(115.0D * distance);
@@ -24,7 +24,7 @@
 /* 24 */     return null;
 /*    */   }
 /*    */   
-/*    */   static double getDistance(Pair<Integer, Integer>... addresses) {
+/*    */ public   static double getDistance(Pair<Integer, Integer>... addresses) {
 /* 28 */     double distance = 0.0D;
 /* 29 */     for (int i = 1; i < addresses.length; i++)
 /* 30 */       distance += euclidean(((Integer)addresses[i - 1].getKey()).intValue(), ((Integer)addresses[i - 1].getValue()).intValue(), ((Integer)addresses[i]

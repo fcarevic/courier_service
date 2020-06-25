@@ -62,7 +62,7 @@ public class cf170065_CourierOperationsImplementation  implements CourierOperati
     @Override
     public List<String> getCouriersWithStatus(int status) {
         List<String> list= new LinkedList<>();
-                String sql = "select username form Courier where status = ?";
+                String sql = "select username from Courier where status = ?";
             Connection conn = DB.get_instance();
         try(      PreparedStatement query = conn.prepareStatement(sql);
                

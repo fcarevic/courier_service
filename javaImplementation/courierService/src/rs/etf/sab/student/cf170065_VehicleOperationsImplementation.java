@@ -222,7 +222,7 @@ public class cf170065_VehicleOperationsImplementation implements VehicleOperatio
         LinkedList<String> list= new LinkedList<>();
         try {
             
-            String sql = "Select registationNum from Parked, Stockroom, Adress where Adress.idCity = ? and Adress.idAdress= Stockroom.idAdress and Parked.idStockroom = Stockroom.idStockroom ";
+            String sql = "Select registrationNum from Parked, Stockroom, Adress where Adress.idCity = ? and Adress.idAdress= Stockroom.idAdress and Parked.idStockroom = Stockroom.idStockroom ";
             Connection conn = DB.get_instance();
             PreparedStatement query= conn.prepareStatement(sql);
             query.setInt(1, idCity);

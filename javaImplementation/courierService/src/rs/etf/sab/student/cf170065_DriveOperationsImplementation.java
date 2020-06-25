@@ -64,7 +64,7 @@ public class cf170065_DriveOperationsImplementation implements DriveOperation{
                   sortRoute(stockroomAdress, deliveringList);
                  
                  LinkedList<PackagePlanInfo> collecting = new LinkedList<>();
-                    LinkedList<PackagePlanInfo> route = new LinkedList<PackagePlanInfo>(pickedPackages);
+                    LinkedList<PackagePlanInfo> route = new LinkedList<PackagePlanInfo>(deliveringList);
               
                  for(int i = deliveringList.size()-1; i>=0;i-- ){
                      PackagePlanInfo pi = deliveringList.get(i);
@@ -95,8 +95,9 @@ public class cf170065_DriveOperationsImplementation implements DriveOperation{
                  pr.getVehicleOperations().unparkVehicle(myVehicle);
            
               
-              if(!pr.getCourierOperations().changeCouriersStatus(username, 1))System.out.println("rs.etf.sab.student.cf170065_DriveOperationsImplementation.planingDrive() NIJE PROMENJEN STATUS KURIRA");;
                if(!pr.getCourierOperations().assignVehicle(username, myVehicle)) System.out.println("rs.etf.sab.student.cf170065_DriveOperationsImplementation.planingDrive() NIJE DODELJENO VOZILO");;
+               if(!pr.getCourierOperations().changeCouriersStatus(username, 1))System.out.println("rs.etf.sab.student.cf170065_DriveOperationsImplementation.planingDrive() NIJE PROMENJEN STATUS KURIRA");;
+          
                return true;
                
          }
@@ -159,7 +160,10 @@ public class cf170065_DriveOperationsImplementation implements DriveOperation{
                     if(currentCap.add(packageWeight).compareTo(vehicleCapacity)>0) continue;
                     if(checkIfPackageBelongsToAnyRoute(idPackage)) continue;
                      currentCap= currentCap.add(packageWeight);
-                     int idAdress = pr.getPackageOperations().getCurrentLocationOfPackage(idPackage);
+                     int city = pr.getPackageOperations().getCurrentLocationOfPackage(idPackage);
+                     int idAdress= pr.getStockroomOperations().getStocroomAdressesFromCity(city).remove(0);
+                     
+                     
                      Pair<Integer, Integer> cords = pr.getAddressOperations().getCoordinatesOfAdress(idAdress);
                      
                      pickedPackages.add(new PackagePlanInfo(idPackage, idAdress, cords));
@@ -253,7 +257,7 @@ public class cf170065_DriveOperationsImplementation implements DriveOperation{
 
     @Override
     public List<Integer> getPackagesInVehicle(String username) {
-        String sql = "Select idPackage from PackageInVehicle where PackageInVehicle.registrationNum = Courier.currentlyDriving and Coruier.userName= ?";
+        String sql = "Select PackageInVehicle.idPackage from PackageInVehicle,Courier where PackageInVehicle.registrationNum = Courier.currentlyDriving and Courier.userName= ?";
         Connection conn = DB.get_instance();
         List<Integer> list= new LinkedList<>();
         

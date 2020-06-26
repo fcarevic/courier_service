@@ -40,6 +40,7 @@ go
 create procedure sp_eraseAll
 as 
 begin
+ delete from CurrentlyDriving where 1=1;
  delete from Package where 1=1;
  delete from PackageInVehicle where 1=1;
  delete from PackageRequest where 1=1;

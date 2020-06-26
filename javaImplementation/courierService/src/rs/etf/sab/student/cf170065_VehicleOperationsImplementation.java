@@ -185,7 +185,7 @@ public class cf170065_VehicleOperationsImplementation implements VehicleOperatio
     @Override
     public boolean parkVehicle(String licencePlate, int idStockroom) {
         try {
-            String sql2 = "Select * from Courier where status=1 and currentlyDriving=?";
+            String sql2 = "Select CurrentlyDriving.* from CurrentlyDriving where registrationNum=? and exists(Select Courier.* from Courier where Courier.username = CurrentlyDriving.username and Courier.status=1)";
             
             String sql = "Insert into Parked(idStockroom, registrationNum) values(?,?) ";
             Connection conn= DB.get_instance();

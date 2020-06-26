@@ -30,7 +30,6 @@ CREATE TABLE [Courier]
 	[userName]           varchar(100)  NOT NULL ,
 	[profit]             decimal(10,3)  NULL ,
 	[status]             smallint  NULL ,
-	[currentlyDriving]   varchar(100)  NULL ,
 	[numberOfDeliveredPackages] integer  NULL 
 )
 go
@@ -39,6 +38,13 @@ CREATE TABLE [CourierRequests]
 ( 
 	[driversLicence]     varchar(100)  NULL ,
 	[userName]           varchar(100)  NOT NULL 
+)
+go
+
+CREATE TABLE [CurrentlyDriving]
+( 
+	[userName]           varchar(100)  NOT NULL ,
+	[registrationNum]    varchar(100)  NOT NULL 
 )
 go
 
@@ -145,6 +151,10 @@ ALTER TABLE [CourierRequests]
 	ADD CONSTRAINT [XAK1CourierRequestsdriverLicence] UNIQUE ([driversLicence]  ASC)
 go
 
+ALTER TABLE [CurrentlyDriving]
+	ADD CONSTRAINT [XPKCurrentlyDriving] PRIMARY KEY  CLUSTERED ([userName] ASC)
+go
+
 ALTER TABLE [EverDriven]
 	ADD CONSTRAINT [XPKEverDriven] PRIMARY KEY  CLUSTERED ([userName] ASC,[registrationNum] ASC)
 go
@@ -198,17 +208,24 @@ ALTER TABLE [Courier]
 		ON UPDATE CASCADE
 go
 
-ALTER TABLE [Courier]
-	ADD CONSTRAINT [R_8] FOREIGN KEY ([currentlyDriving]) REFERENCES [Vehicle]([registrationNum])
-		ON DELETE NO ACTION
-		ON UPDATE CASCADE
-go
-
 
 ALTER TABLE [CourierRequests]
 	ADD CONSTRAINT [R_4] FOREIGN KEY ([userName]) REFERENCES [Users]([userName])
 		ON DELETE NO ACTION
 		ON UPDATE CASCADE
+go
+
+
+ALTER TABLE [CurrentlyDriving]
+	ADD CONSTRAINT [R_21] FOREIGN KEY ([userName]) REFERENCES [Courier]([userName])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+ALTER TABLE [CurrentlyDriving]
+	ADD CONSTRAINT [R_22] FOREIGN KEY ([registrationNum]) REFERENCES [Vehicle]([registrationNum])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
 go
 
 
@@ -221,7 +238,7 @@ go
 ALTER TABLE [EverDriven]
 	ADD CONSTRAINT [R_10] FOREIGN KEY ([registrationNum]) REFERENCES [Vehicle]([registrationNum])
 		ON DELETE NO ACTION
-		ON UPDATE no action
+		ON UPDATE CASCADE
 go
 
 
@@ -260,13 +277,13 @@ go
 ALTER TABLE [PackageRequest]
 	ADD CONSTRAINT [R_12] FOREIGN KEY ([fromAdress]) REFERENCES [Adress]([idAdress])
 		ON DELETE NO ACTION
-		ON UPDATE no action
+		ON UPDATE CASCADE
 go
 
 ALTER TABLE [PackageRequest]
 	ADD CONSTRAINT [R_13] FOREIGN KEY ([toAdress]) REFERENCES [Adress]([idAdress])
 		ON DELETE NO ACTION
-		ON UPDATE no action
+		ON UPDATE CASCADE
 go
 
 
@@ -293,5 +310,5 @@ go
 ALTER TABLE [Users]
 	ADD CONSTRAINT [R_3] FOREIGN KEY ([idAdress]) REFERENCES [Adress]([idAdress])
 		ON DELETE NO ACTION
-		ON UPDATE no action
+		ON UPDATE CASCADE
 go

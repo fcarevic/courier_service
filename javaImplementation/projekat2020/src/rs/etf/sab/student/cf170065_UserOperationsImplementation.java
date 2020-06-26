@@ -51,7 +51,7 @@ public class cf170065_UserOperationsImplementation implements UserOperations{
             
             return query.executeUpdate()==1;
         } catch (SQLException ex) {
-//            Logger.getLogger(cf170065_UserOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(cf170065_UserOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
         }
               
                 return false;
@@ -70,7 +70,7 @@ public class cf170065_UserOperationsImplementation implements UserOperations{
             return( query.executeUpdate()==1) ;
             
         } catch (SQLException ex) {
-      //      Logger.getLogger(cf170065_UserOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(cf170065_UserOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
         }
         return false;
         

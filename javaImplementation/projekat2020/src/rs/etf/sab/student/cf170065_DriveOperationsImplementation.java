@@ -272,6 +272,7 @@ public class cf170065_DriveOperationsImplementation implements DriveOperation{
             
             PackageRoutes.getInstance().getCourierOperations().incrementProfitForCourier(username, profit);
             PackageRoutes.getInstance().getCourierOperations().changeCouriersStatus(username, 0);
+            PackageRoutes.getInstance().getCourierOperations().leaveVehicle(username);
             int idStockroom = PackageRoutes.getInstance().getStockroomOperations().getStockroomOnAdress(pi.getIdAdressFrom());
             PackageRoutes.getInstance().getVehicleOperations().parkVehicle(licencePlate, idStockroom);
             //  todo:: postavi null na curently diriving
@@ -292,7 +293,7 @@ public class cf170065_DriveOperationsImplementation implements DriveOperation{
 
     @Override
     public List<Integer> getPackagesInVehicle(String username) {
-        String sql = "Select PackageInVehicle.idPackage from PackageInVehicle,Courier where PackageInVehicle.registrationNum = Courier.currentlyDriving and Courier.userName= ?";
+        String sql = "Select PackageInVehicle.idPackage from PackageInVehicle,CurrentlyDriving where PackageInVehicle.registrationNum = CurrentlyDriving.registrationNum and CurrentlyDriving.username=  ?";
         Connection conn = DB.get_instance();
         List<Integer> list= new LinkedList<>();
         

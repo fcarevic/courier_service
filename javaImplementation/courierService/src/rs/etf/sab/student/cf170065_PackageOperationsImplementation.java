@@ -262,7 +262,7 @@ public class cf170065_PackageOperationsImplementation implements PackageOperatio
             query.setInt(2, package_id);
              query.setInt(3, package_id);
             query.setBigDecimal(1, weight);
-            return query.executeUpdate()==1;
+            if(query.executeUpdate()==1) return setPrice(package_id);
            
              
                 
@@ -274,6 +274,32 @@ public class cf170065_PackageOperationsImplementation implements PackageOperatio
         }
         return false;   }
 
+    public boolean setPrice(int idPackage){
+         int toAdress = getAdressTo(idPackage);
+         int fromAdress= getCurrentAdressOfPackage(idPackage);
+         Pair<Integer,Integer> to = PackageRoutes.getInstance().getAddressOperations().getCoordinatesOfAdress(toAdress);
+           Pair<Integer,Integer> from = PackageRoutes.getInstance().getAddressOperations().getCoordinatesOfAdress(fromAdress);
+          double distance= Math.hypot(to.getKey()- from.getKey(), to.getValue()-from.getValue());
+          int type =getType(idPackage);
+          BigDecimal weight = getWeight(idPackage);
+     
+         BigDecimal price = getPackagePrice(type, weight, distance);
+        String sql2= "Update Package set price  = ? where idPackage = ?"  ;
+     Connection conn = DB.get_instance();
+        try (     PreparedStatement query = conn.prepareStatement(sql2);
+       ){
+            query.setInt(2, idPackage);
+            query.setBigDecimal(1, price);
+            return query.executeUpdate()==1;
+        } catch (SQLException ex) {
+            Logger.getLogger(cf170065_PackageOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+     
+   return false;
+    
+    }
+    
+    
     @Override
     public boolean changeType(int package_id, int type) {
    String sql = "update PackageRequest set type = ? where idPackage = ? and (select status from Package where idPackage = ? ) = 0";
@@ -283,7 +309,13 @@ public class cf170065_PackageOperationsImplementation implements PackageOperatio
             query.setInt(2, package_id);
              query.setInt(3, package_id);
             query.setInt(1, type);
-            return query.executeUpdate()==1;
+            if( query.executeUpdate()==1){
+                return setPrice(package_id);
+            
+            
+            
+            
+            }
            
              
                 
@@ -402,6 +434,22 @@ public class cf170065_PackageOperationsImplementation implements PackageOperatio
             Logger.getLogger(cf170065_PackageOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
+    
+    }
+    public int getType(int idPackage) {
+        try {
+            String sql = "Select type from PackageRequest where idPackage = ? ";
+            Connection conn = DB.get_instance();
+            
+            PreparedStatement query= conn.prepareStatement(sql);
+            query.setInt(1, idPackage);
+            ResultSet rs= query.executeQuery();
+            if(rs.next())
+                return rs.getInt(1);
+        } catch (SQLException ex) {
+            Logger.getLogger(cf170065_PackageOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return -1;
     
     }
 

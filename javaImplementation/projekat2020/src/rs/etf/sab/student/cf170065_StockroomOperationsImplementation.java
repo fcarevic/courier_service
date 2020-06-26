@@ -69,7 +69,7 @@ public class cf170065_StockroomOperationsImplementation implements StockroomOper
     public boolean deleteStockroom(int stockroom_id) {
            
            String sql = "delete from Stockroom where idStockroom = ? and not exists(select * from Package where currently_atAdress = Stockroom.idAdress "+
-                    "and not exists( Select * from PackageInVehicle where Package.idPackage=PackageInVehicle.idPackage ))";
+                    "and not exists( Select * from PackageInVehicle where Package.idPackage=PackageInVehicle.idPackage )) and not exists (select * from parked where parked.idStockroom = Stockroom.idStockroom)";
         Connection conn = DB.get_instance();
        try( PreparedStatement query = conn.prepareStatement(sql);)
        {

@@ -52,7 +52,7 @@ public class cf170065_AdressOperationsImplementation implements AddressOperation
              generatedKeys.close();
            
         } catch (SQLException ex) {
-            //Logger.getLogger(cf170065_AdressOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(cf170065_AdressOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
         }
        return new_id;
     

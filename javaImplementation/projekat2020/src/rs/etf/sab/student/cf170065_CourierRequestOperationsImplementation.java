@@ -40,7 +40,7 @@ public class cf170065_CourierRequestOperationsImplementation implements CourierR
                 return query.executeUpdate()==1;
                 
         } catch (SQLException ex) {
-//            Logger.getLogger(cf170065_CourierRequestOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(cf170065_CourierRequestOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
         }
         return false;
     }
@@ -152,6 +152,7 @@ public class cf170065_CourierRequestOperationsImplementation implements CourierR
                
                if(!flag)conn.rollback();
                else conn.commit();
+               conn.setAutoCommit(true);
                return flag;
                
                 
@@ -161,11 +162,11 @@ public class cf170065_CourierRequestOperationsImplementation implements CourierR
                 
             } catch (SQLException ex) {
                 conn.setAutoCommit(true);
-               // Logger.getLogger(cf170065_CityOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(cf170065_CityOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
             }
             
         } catch (SQLException ex) {
-        //    Logger.getLogger(cf170065_CourierRequestOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(cf170065_CourierRequestOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
         }
       return false;
      }

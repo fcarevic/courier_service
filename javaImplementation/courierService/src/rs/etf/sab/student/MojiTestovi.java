@@ -45,11 +45,10 @@ public class MojiTestovi {
           System.out.println("rs.etf.sab.student.StudentMain.main() poceo test");
           
          MojiTestovi mt= new MojiTestovi();
-         
-         
          mt.generalOperations.eraseAll();
-        mt.publicOne();
-        
+         mt.publicTwo();
+         
+       
         
          
          

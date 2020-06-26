@@ -185,7 +185,7 @@ public class cf170065_VehicleOperationsImplementation implements VehicleOperatio
     @Override
     public boolean parkVehicle(String licencePlate, int idStockroom) {
         try {
-            String sql2 = "Select * from Courier where status=1 and currentlyDriving=?";
+            String sql2 = "Select CurrentlyDriving.* from CurrentlyDriving where registrationNum=? and exists(Select Courier.* from Courier where Courier.username = CurrentlyDriving.username and Courier.status=1)";
             
             String sql = "Insert into Parked(idStockroom, registrationNum) values(?,?) ";
             Connection conn= DB.get_instance();
@@ -199,7 +199,7 @@ public class cf170065_VehicleOperationsImplementation implements VehicleOperatio
             query.setString(2, licencePlate);
             return query.executeUpdate()==1;
         } catch (SQLException ex) {
-           // Logger.getLogger(cf170065_VehicleOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(cf170065_VehicleOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
         }
         return false;
      

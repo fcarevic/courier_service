@@ -25,8 +25,8 @@ public class cf170065_CourierOperationsImplementation  implements CourierOperati
     @Override
     public boolean insertCourier(String username, String licencePlate) {
         if(PackageRoutes.getInstance().getCourierRequestOperation().checkExistsDriversLicence(licencePlate, username)) return false;
-             String sql = "insert into Courier (username, dirversLicence, profit , status, currentlyDriving, numberOfDeliveredPackages) "
-                     + "        values(?,?,0,0,null,0)";
+             String sql = "insert into Courier (username, dirversLicence, profit , status, numberOfDeliveredPackages) "
+                     + "        values(?,?,0,0,0)";
             Connection conn = DB.get_instance();
         try(      PreparedStatement query = conn.prepareStatement(sql);
                
@@ -157,12 +157,12 @@ public class cf170065_CourierOperationsImplementation  implements CourierOperati
           boolean flag =false;
         try {
             String sql = "Insert into EverDriven(userName, registrationNum) values (?,?)";
-            String sql2 = "Update Courier set currentlyDriving = ? where userName=? and status = 0";
+            String sql2 = "Insert into CurrentlyDriving(userName, registrationNum) values (?,?) ";
             
             Connection conn= DB.get_instance();
             PreparedStatement query = conn.prepareStatement(sql2);
-            query.setString(1, myVehicle);
-            query.setString(2, username);
+            query.setString(1, username );
+            query.setString(2, myVehicle);
            flag= query.executeUpdate()==1;
             if(flag){
                             PreparedStatement query2 = conn.prepareStatement(sql);
@@ -175,13 +175,27 @@ public class cf170065_CourierOperationsImplementation  implements CourierOperati
             
             }
         } catch (SQLException ex) {
-     //       Logger.getLogger(cf170065_CourierOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(cf170065_CourierOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
         }
         return flag;
     }
+    public boolean leaveVehicle(String username){
+            String sql = "Delete from CurrentlyDriving where username=?";
+            Connection conn = DB.get_instance();
+        try (PreparedStatement query = conn.prepareStatement(sql);
+            ){
+            query.setString(1, username);
+            return query.executeUpdate()==1;
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(cf170065_CourierOperationsImplementation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
+    
+    }
      
     public    String getCurrentlyDrivingVehicle(String username) {
-     String sql2 = " select currentlyDriving from Courier where userName=? and status = 1";
+     String sql2 = " select registrationNum from CurrentlyDriving where userName=?";
      Connection conn= DB.get_instance();
         try {
             PreparedStatement query = conn.prepareStatement(sql2);
